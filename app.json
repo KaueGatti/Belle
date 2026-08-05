@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "Belle",
+    "slug": "manicureapp",
+    "scheme": "manicureapp",
+    "version": "1.0.0",
+    "icon": "./assets/icon.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.manicure.app"
+    },
+    "android": {
+      "package": "com.manicure.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#A64D6B",
+        "foregroundImage": "./assets/adaptive-icon.png"
+      },
+      "permissions": [
+        "SCHEDULE_EXACT_ALARM"
+      ]
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-navigation-bar",
+        {
+          "visibility": "hidden",
+          "behavior": "inset-swipe",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#A64D6B"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "extra": {
+      "expo-navigation-bar": {
+        "visibility": "hidden",
+        "behavior": "inset-swipe",
+        "backgroundColor": "#FFFFFF"
+      },
+      "eas": {
+        "projectId": "8f53ac6a-e1f6-4bed-b1f9-043b7f6ae160"
+      }
+    },
+    "owner": "lucitti"
+  }
+}
