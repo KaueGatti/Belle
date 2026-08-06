@@ -1,4 +1,4 @@
-# Manicure App 💅
+# Belle
 
 Aplicativo em React Native (Expo) para gestão de manicures/nail designers autônomas: agenda de clientes, cadastro de clientes, contas a pagar e a receber (com status pago/recebido) e centro de custo.
 
