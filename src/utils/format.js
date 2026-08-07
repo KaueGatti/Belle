@@ -81,6 +81,26 @@ export function isoToDate(isoDate) {
   return new Date(y, (m || 1) - 1, d || 1);
 }
 
+// Converte 'HH:mm' para total de minutos (ex: "12:45" -> 765)
+export function horaParaMin(hora) {
+  if (!hora || typeof hora !== 'string') return 0;
+  const [h, m] = hora.split(':').map(Number);
+  return (Number(h) || 0) * 60 + (Number(m) || 0);
+}
+
+// Converte total de minutos para 'HH:mm' (ex.: 765 -> "12:45")
+export function minParaHora(min) {
+  const total = Math.max(0, Math.round(Number(min) || 0));
+  const h = String(Math.floor(total / 60)).padStart(2, '0');
+  const m = String(total % 60).padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+// Soma 'n' minutos a uma hora 'HH:mm' e retorna a hora de término 'HH:mm'
+export function horaMaisMin(hora, min) {
+  return minParaHora(horaParaMin(hora) + (Number(min) || 0));
+}
+
 // Formata Date -> 'HH:mm'
 export function timeToString(date) {
   const h = String(date.getHours()).padStart(2, '0');

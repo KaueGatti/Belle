@@ -98,7 +98,7 @@ export default function AgendamentoDetalheScreen({ route, navigation }) {
             </View>
             <View style={styles.metaItem}>
               <Ionicons name="time-outline" size={16} color={colors.primary} />
-              <Text style={styles.metaText}>{agendamento.hora}</Text>
+              <Text style={styles.metaText}>{agendamento.hora}{agendamento.duracao ? ` • ${agendamento.duracao} min` : ''}</Text>
             </View>
           </View>
         </Card>

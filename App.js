@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+if (typeof global.crypto === 'undefined' || !global.crypto.getRandomValues) {
+  global.crypto = { ...(global.crypto || {}), getRandomValues: Crypto.getRandomValues };
+}
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';

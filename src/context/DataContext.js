@@ -157,7 +157,8 @@ export function DataProvider({ children }) {
     setContas((prev) => prev.filter((c) => c.id !== id));
   }
   // Registra um pagamento parcial/total sobre a conta
-  function pagarConta(id, valor) {
+  // data: data do pagamento (retroativa ou atual); gravada em todo pagamento
+  function pagarConta(id, valor, data) {
     setContas((prev) =>
       prev.map((c) => {
         if (c.id !== id) return c;
@@ -168,7 +169,7 @@ export function DataProvider({ children }) {
           ...c,
           valorPago,
           status: quitado ? 'quitado' : 'pendente',
-          dataPagamento: quitado ? todayISO() : null,
+          dataPagamento: data || todayISO(),
           updatedAt: Date.now(),
         };
       })
@@ -256,17 +257,21 @@ export function DataProvider({ children }) {
   }
 
   // ---------- Vendas de Pacote ----------
-  function venderPacote(clienteId, pacoteId, desconto = 0) {
+  // opcoes: { dataVenda, valorPago, dataRecebimento }
+  function venderPacote(clienteId, pacoteId, desconto = 0, opcoes = {}) {
     const pacote = getPacote(pacoteId);
     if (!pacote) return null;
     const cliente = clientes.find((c) => c.id === clienteId);
     const descontoNum = Math.max(0, Number(desconto) || 0);
     const valor = Math.max(0, Number(pacote.valor || 0) - descontoNum);
+    const dataVenda = opcoes.dataVenda || todayISO();
+    const valorPago = Math.max(0, Number(opcoes.valorPago) || 0);
+    const statusConta = valorPago >= valor ? 'quitado' : 'pendente';
     const novo = {
       id: generateId('pv'),
       pacoteId,
       clienteId,
-      vendidoEm: todayISO(),
+      vendidoEm: dataVenda,
       valor,
       desconto: descontoNum,
       servicos: pacote.servicos.map((s) => ({ servicoId: s.servicoId, qtd: s.qtd })),
@@ -278,10 +283,11 @@ export function DataProvider({ children }) {
       tipo: 'receber',
       descricao: `Pacote ${pacote.nome} - ${cliente?.nome || ''}`,
       valor,
-      vencimento: todayISO(),
+      vencimento: dataVenda,
       clienteId,
-      valorPago: 0,
-      status: 'pendente',
+      valorPago,
+      status: statusConta,
+      dataPagamento: valorPago > 0 ? opcoes.dataRecebimento || todayISO() : null,
     });
     return novo;
   }

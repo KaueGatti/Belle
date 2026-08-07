@@ -7,6 +7,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import SegmentedControl from '../components/SegmentedControl';
+import DateField from '../components/DateField';
 import EmptyState from '../components/EmptyState';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
@@ -16,6 +17,7 @@ import {
   maskCurrencyInput,
   maskPercent,
   parseCurrencyInput,
+  todayISO,
 } from '../utils/format';
 
 export default function VendaPacoteScreen({ route, navigation }) {
@@ -27,9 +29,12 @@ export default function VendaPacoteScreen({ route, navigation }) {
   const [pacoteId, setPacoteId] = useState(null);
   const [tipoDesconto, setTipoDesconto] = useState('percent');
   const [descontoTexto, setDescontoTexto] = useState('');
+  const [dataVenda, setDataVenda] = useState(todayISO());
+  const [dataRecebimento, setDataRecebimento] = useState(todayISO());
+  const [valorPagoTexto, setValorPagoTexto] = useState('');
   const [erroCliente, setErroCliente] = useState('');
-  const [erroPacote, setErroPacote] = useState('');
   const [erroDesconto, setErroDesconto] = useState('');
+  const [erroPacote, setErroPacote] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: 'Vender Pacote' });
@@ -90,9 +95,18 @@ export default function VendaPacoteScreen({ route, navigation }) {
     } else {
       setErroDesconto('');
     }
+    const valorPago = parseCurrencyInput(valorPagoTexto);
+    if (valorPago > valorFinal) {
+      setErroDesconto('O valor já recebido não pode ser maior que o total');
+      ok = false;
+    }
     if (!ok) return;
 
-    venderPacote(clienteId, pacoteId, descontoValor);
+    venderPacote(clienteId, pacoteId, descontoValor, {
+      dataVenda,
+      valorPago,
+      dataRecebimento,
+    });
     showToast('Pacote vendido');
     navigation.goBack();
   }
@@ -210,6 +224,20 @@ export default function VendaPacoteScreen({ route, navigation }) {
               <Text style={styles.resumoTotalValue}>{formatCurrency(valorFinal)}</Text>
             </View>
           </Card>
+        ) : null}
+
+        <Text style={styles.label}>Data da venda</Text>
+        <DateField value={dataVenda} onChange={setDataVenda} />
+
+        <Input
+          label="Valor já recebido na venda"
+          value={valorPagoTexto}
+          onChangeText={(t) => setValorPagoTexto(maskCurrencyInput(t))}
+          placeholder="R$ 0,00"
+          keyboardType="decimal-pad"
+        />
+        {parseCurrencyInput(valorPagoTexto) > 0 ? (
+          <DateField label="Data do recebimento" value={dataRecebimento} onChange={setDataRecebimento} />
         ) : null}
 
         <Button title="Confirmar Venda" onPress={handleVender} style={{ marginTop: spacing.md }} />

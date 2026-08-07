@@ -85,7 +85,10 @@ export default function AgendaScreen({ navigation }) {
               </View>
               <View style={{ flex: 1, marginLeft: spacing.sm }}>
                 <Text style={styles.cliente}>{cliente ? cliente.nome : 'Cliente removido'}</Text>
-                <Text style={styles.servico}>{formatAgendamentoServicos(item)}</Text>
+                <Text style={styles.servico}>
+                  {formatAgendamentoServicos(item)}
+                  {item.duracao ? ` • ${item.duracao} min` : ''}
+                </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
                 <Text style={styles.valor}>{formatCurrency(item.valor)}</Text>

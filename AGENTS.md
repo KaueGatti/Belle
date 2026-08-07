@@ -17,7 +17,11 @@ autônomas. Permite:
 - **Centros de custo** (categorias de receita/despesa) com total consolidado.
 - **Dashboard** com resumo financeiro, estatísticas rápidas e próximos agendamentos.
 
-Tudo é **somente local** (async storage) — sem backend, sem autenticação, sem sincronização entre aparelhos.
+Os dados são **local-first** (async storage) — o app funciona 100% offline. Há
+**espelho opcional em nuvem** (Supabase + login Google) ativado em
+Configurações > Conta e sincronização (ver seções "Backup/Sincronização" e o guia
+`SUPABASE_SETUP.md`). O código está pronto; a ativação depende de configurar o
+projeto Supabase (URL + anon key em `src/utils/supabase.js`) — pendente.
 
 ---
 
@@ -32,6 +36,8 @@ Tudo é **somente local** (async storage) — sem backend, sem autenticação, s
 | Persistência | `@react-native-async-storage/async-storage` | 2.2.0 |
 | Notificações locais | `expo-notifications` | 0.32.17 |
 | Gradientes | `expo-linear-gradient` | ~15.0.8 |
+| Atualizações OTA | `expo-updates` (+ EAS Update) | ~1.0.2 |
+| Cripto/polyfill (PKCE login) | `expo-crypto` | ~15.0.1 |
 | Ícones | `@expo/vector-icons` (Ionicons) | ^15.1.1 |
 | Data/Time picker | `@react-native-community/datetimepicker` | 8.4.4 |
 | Safe areas | `react-native-safe-area-context` | ~5.6.0 |
@@ -388,16 +394,48 @@ O app continua 100% offline/local sem conta; a nuvem é um espelho opcional.
 - **`App.js`** — ordem de providers: `DataProvider > AuthProvider > SyncProvider > NotificationSync + ToastProvider`.
 
 ## Configuração do Supabase (para ativar a nuvem)
-1. Criar projeto em https://supabase.com; copiar **Project URL** + **anon key** (Settings > API) para `src/utils/supabase.js`.
-2. Criar tabela **`registros`**:
-   - `id` **text**, `user_id` **uuid**, `entidade` **text**, `dados` **jsonb**, `updated_at` **bigint**.
-   - Primary key composta: `(user_id, entidade, id)`.
-   - Habilitar **RLS** e criar política `user_id = auth.uid()` para `select`/`insert`/`update`/`delete`.
-3. **Auth > Providers**: habilitar **Google** com Client ID/Secret do Google Cloud.
-4. Adicionar o URI de redirect (`redirect_to`) no allowlist do Auth (no Expo Go é o `exp://…`; em build standalone é `manicureapp://…`).
-5. Rebuild/reload do app (novos módulos nativos + `scheme`).
+- Seguir o guia passo a passo **`SUPABASE_SETUP.md`** (criado na sessão de cloud storage).
+- O script SQL pronto está em **`supabase.sql`** na raiz (cria tabela `registros` + índices + RLS):
+  1. Criar projeto em https://supabase.com; copiar **Project URL** + **anon key** (Settings > API) para `src/utils/supabase.js`.
+  2. **SQL Editor** → colar `supabase.sql` → Run (cria `registros` `(user_id, entidade, id)` + políticas RLS `auth.uid()`).
+  3. **Auth > Providers**: habilitar **Google** com Client ID/Secret (criar via *Create new client*, grátis).
+  4. Adicionar o URI de redirect (`redirect_to`) no allowlist do Auth (no Expo Go é o `exp://…`; em build standalone é `manicureapp://…`).
+  5. Rebuild/reload do app (novos módulos nativos + `scheme`).
 
 > Nota: o Firestore JS não teria offline no RN; o Supabase escolhido mantém o AsyncStorage como fonte offline real.
 
+> **Hardening PKCE**: `src/utils/supabase.js:34` `signInWithGoogle()` usa fluxo PKCE, que exige `crypto.getRandomValues`. Como o Hermes/APK não tem isso, `App.js` faz o polyfill com `expo-crypto` (`global.crypto.getRandomValues`). Não remover/deslocar esse polyfill antes do `createClient`.
+
 ## Validação
 - `node --check` em todos os arquivos alterados + `npx expo export --platform android` (bundle OK).
+
+---
+
+# Sessão: Atualizações OTA (EAS Update)
+
+Configurado o **over-the-air (OTA)** para enviar correções de JS **sem rebuild/reenvio de APK**.
+
+## Mudanças
+- **`package.json`** — adicionado `expo-updates` (via `npx expo install`).
+- **`app.json`** — seção `updates`:
+  - `url: "https://u.expo.dev/8f53ac6a-e1f6-4bed-b1f9-043b7f6ae160"`
+  - `runtimeVersion: { "policy": "fingerprint" }` (detecta quando é preciso novo APK: mudança nativa vs. só JS).
+- **`eas.json`** — canais por perfil: `preview` (APK interno) e `production` (app-bundle/Play Store).
+
+## Rotina
+```bash
+# APK novo (somente quando há mudança nativa: SDK, novo módulo nativo, permissões, ícone/nome)
+npx eas build -p android --profile preview
+
+# Correção de código JS (telas, lógica, estilos) — sem novo APK
+npx eas update --channel preview --platform android
+```
+Clientes abrem o app e o update baixa sozinho. O `runtimeVersion` `fingerprint`
+muda quando o binário nativo muda; enquanto o JS só for alterado, o OTA cobre.
+
+## Validação
+- `npx expo export --platform android` (bundle OK).
+
+---
+
+# Sessão: Cloud storage (Supabase) — preparação

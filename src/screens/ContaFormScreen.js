@@ -24,6 +24,7 @@ export default function ContaFormScreen({ route, navigation }) {
     existente?.valorPago != null && Number(existente.valorPago) > 0 ? maskCurrency(existente.valorPago) : ''
   );
   const [vencimento, setVencimento] = useState(existente?.vencimento || todayISO());
+  const [dataPagamento, setDataPagamento] = useState(existente?.dataPagamento || todayISO());
   const [centroCustoId, setCentroCustoId] = useState(existente?.centroCustoId || null);
   const [clienteId, setClienteId] = useState(existente?.clienteId || null);
   const [status, setStatus] = useState(existente?.status || 'pendente');
@@ -65,8 +66,7 @@ export default function ContaFormScreen({ route, navigation }) {
       centroCustoId,
       clienteId: tipo === 'receber' ? clienteId : null,
       status: statusFinal,
-      dataPagamento:
-        statusFinal === 'quitado' ? existente?.dataPagamento || todayISO() : valorPago > 0 ? null : existente?.dataPagamento || null,
+      dataPagamento: valorPago > 0 ? dataPagamento : null,
     };
     if (existente) {
       updateConta(existente.id, dados);
@@ -137,6 +137,9 @@ export default function ContaFormScreen({ route, navigation }) {
         />
 
         <DateField label="Vencimento" required value={vencimento} onChange={setVencimento} />
+
+        <Text style={styles.label}>Data do {tipo === 'pagar' ? 'pagamento' : 'recebimento'}</Text>
+        <DateField value={dataPagamento} onChange={setDataPagamento} />
 
         <SelectField
           label="Centro de Custo"

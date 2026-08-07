@@ -1,4 +1,4 @@
-# Manicure App 💅
+# Belle 💅
 
 Aplicativo em React Native (Expo) para gestão de manicures/nail designers autônomas: agenda de clientes, cadastro de clientes, contas a pagar e a receber (com status pago/recebido) e centro de custo.
 
@@ -36,6 +36,54 @@ Depois de iniciar, um QR Code aparecerá no terminal:
 - **Emulador Android:** com o Android Studio configurado, pressione `a` no terminal.
 - **Simulador iOS:** em um Mac com Xcode, pressione `i` no terminal.
 - **Web (experimental):** pressione `w` no terminal.
+
+## Instalação do APK (Android)
+
+Para instalar o **Belle** como aplicativo no seu celular Android, gere um APK com o **EAS Build** (build na nuvem — não precisa de Android Studio nem JDK na sua máquina).
+
+### Pré-requisitos
+
+- Conta no [Expo](https://expo.dev) (você já é dono do projeto `lucitti` no `app.json`).
+- Node.js 18+ e npm.
+
+### Passo a passo
+
+```bash
+# 1. Instale o CLI do EAS (se ainda não tiver)
+npm install -g eas-cli
+
+# 2. Faça login (a conta logada deve ter acesso ao projeto do owner "lucitti")
+eas login
+eas whoami
+
+# 3. (Recomendado) Versionamento com git — deixa o build do EAS mais estável
+git init
+git add -A
+git commit -m "chore: preparar build"
+
+# 4. Crie o arquivo eas.json na raiz (gera APK instalável em vez de AAB):
+#    {
+#      "cli": { "appVersionSource": "remote" },
+#      "build": {
+#        "preview": { "distribution": "internal", "android": { "buildType": "apk" } },
+#        "production": { "android": { "buildType": "app-bundle" } }
+#      }
+#    }
+
+# 5. Gere o APK (build na nuvem, ~5–15 min)
+eas build -p android --profile preview
+```
+
+### Instalando o APK no celular
+
+1. Ao finalizar, o EAS mostra um **link/QR Code** com o download do `.apk`.
+2. Baixe o arquivo no celular Android.
+3. Se o sistema pedir, **permita "instalar apps de fontes desconhecidas"** para o navegador/gerenciador de arquivos que abrir o APK.
+4. Abra o APK e confirme a instalação. O **Belle** aparecerá no menu de aplicativos.
+
+> **Observações:**
+> - O ícone (`assets/icon.png`), o nome **Belle** e os módulos nativos (notificações, navegação por gestos) **só aparecem no APK** — o Expo Go não reflete essas configurações.
+> - Mudanças futuras de código não exigem novo APK se você usar o Expo Go/`expo start`. Já mudanças em `app.json` (ícone, nome, plugins nativos) exigem um **novo build**.
 
 ## Estrutura do projeto
 

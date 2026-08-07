@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import Card from '../components/Card';
-import Logo from '../components/Logo';
 import EmptyState from '../components/EmptyState';
 import PeriodFilter from '../components/PeriodFilter';
 import { useData } from '../context/DataContext';
@@ -61,7 +60,6 @@ export default function DashboardScreen({ navigation }) {
                 <Text style={styles.heroGreeting}>Olá Josiane!</Text>
                 <Text style={styles.heroSub}>Resumo do seu negócio</Text>
               </View>
-              <Logo size={54} />
               <TouchableOpacity
                 style={styles.settingsBtn}
                 onPress={() => navigation.navigate('Configuracoes')}

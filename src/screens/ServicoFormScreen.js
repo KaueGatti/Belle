@@ -16,8 +16,10 @@ export default function ServicoFormScreen({ route, navigation }) {
 
   const [nome, setNome] = useState(existente?.nome || '');
   const [precoTexto, setPrecoTexto] = useState(existente?.preco != null ? maskCurrency(existente.preco) : '');
+  const [duracaoTexto, setDuracaoTexto] = useState(existente?.duracao != null ? String(existente.duracao) : '');
   const [erroNome, setErroNome] = useState('');
   const [erroPreco, setErroPreco] = useState('');
+  const [erroDuracao, setErroDuracao] = useState('');
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: existente ? 'Editar Serviço' : 'Novo Serviço' });
@@ -38,9 +40,16 @@ export default function ServicoFormScreen({ route, navigation }) {
     } else {
       setErroPreco('');
     }
+    const duracao = parseInt((duracaoTexto || '').replace(/\D/g, ''), 10) || 0;
+    if (duracao <= 0) {
+      setErroDuracao('Informe uma duração válida (min)');
+      ok = false;
+    } else {
+      setErroDuracao('');
+    }
     if (!ok) return;
 
-    const dados = { nome: nome.trim(), preco };
+    const dados = { nome: nome.trim(), preco, duracao };
     if (existente) {
       updateServico(existente.id, dados);
     } else {
@@ -95,6 +104,18 @@ export default function ServicoFormScreen({ route, navigation }) {
           placeholder="R$ 0,00"
           keyboardType="decimal-pad"
           error={erroPreco}
+        />
+        <Input
+          label="Duração estimada (minutos)"
+          required
+          value={duracaoTexto}
+          onChangeText={(t) => {
+            setDuracaoTexto((t || '').replace(/\D/g, ''));
+            if (parseInt(t.replace(/\D/g, ''), 10) > 0) setErroDuracao('');
+          }}
+          placeholder="Ex: 45"
+          keyboardType="number-pad"
+          error={erroDuracao}
         />
 
         <Button title="Salvar" onPress={handleSalvar} style={{ marginTop: spacing.sm }} />

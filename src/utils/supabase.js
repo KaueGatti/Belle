@@ -5,8 +5,8 @@ import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 
 // Preencha com os dados do seu projeto Supabase (Console > Settings > API):
-export const SUPABASE_URL = '';
-export const SUPABASE_ANON_KEY = '';
+export const SUPABASE_URL = 'https://iybtgijiarfyxmxoqcvp.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5YnRnaWppYXJmeXhteG9xY3ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYwNTM3NDksImV4cCI6MjEwMTYyOTc0OX0.oVLMGh2KoiGfVJLF-nca2kh79lxpUcn_i7L2VXZXr0U';
 
 export const SCHEME = 'manicureapp';
 

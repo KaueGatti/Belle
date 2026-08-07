@@ -27,6 +27,12 @@
     "web": {
       "bundler": "metro"
     },
+    "updates": {
+      "url": "https://u.expo.dev/8f53ac6a-e1f6-4bed-b1f9-043b7f6ae160",
+      "runtimeVersion": {
+        "policy": "fingerprint"
+      }
+    },
     "plugins": [
       [
         "expo-navigation-bar",

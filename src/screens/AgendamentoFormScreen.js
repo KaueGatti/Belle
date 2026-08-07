@@ -12,13 +12,14 @@ import MultiSelectField from '../components/MultiSelectField';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
 import { colors, spacing, radius } from '../theme/colors';
-import { formatCurrency, maskCurrency, maskCurrencyInput, parseCurrencyInput, todayISO } from '../utils/format';
+import { formatCurrency, maskCurrency, maskCurrencyInput, parseCurrencyInput, todayISO, horaParaMin, minParaHora } from '../utils/format';
 
 export default function AgendamentoFormScreen({ route, navigation }) {
   const { agendamentoId, clientePreset } = route.params || {};
   const {
     clientes,
     servicos,
+    agendamentos,
     getAgendamento,
     addAgendamento,
     updateAgendamento,
@@ -56,6 +57,14 @@ export default function AgendamentoFormScreen({ route, navigation }) {
   const [observacoes, setObservacoes] = useState(existente?.observacoes || '');
   const [gerarConta, setGerarConta] = useState(true);
   const [sorteio, setSorteio] = useState(Boolean(existente?.sorteio));
+  const [duracao, setDuracao] = useState(existente?.duracao != null ? String(existente.duracao) : '');
+  const [duracaoEditado, setDuracaoEditado] = useState(Boolean(existente));
+  const [pago, setPago] = useState(
+    () => contas.find((c) => c.agendamentoId === existente?.id)?.status === 'quitado'
+  );
+  const [dataPagamento, setDataPagamento] = useState(
+    () => contas.find((c) => c.agendamentoId === existente?.id)?.dataPagamento || todayISO()
+  );
   const [erros, setErros] = useState({});
 
   useLayoutEffect(() => {
@@ -110,6 +119,15 @@ export default function AgendamentoFormScreen({ route, navigation }) {
     [servicosSelecionados, servicos]
   );
 
+  const duracaoSugerida = useMemo(
+    () =>
+      servicosSelecionados.reduce((acc, id) => {
+        const s = servicos.find((x) => x.id === id);
+        return acc + Number(s?.duracao || 0);
+      }, 0),
+    [servicosSelecionados, servicos]
+  );
+
   function toggleServico(id) {
     const selecionados = servicosSelecionados.includes(id)
       ? servicosSelecionados.filter((s) => s !== id)
@@ -122,12 +140,27 @@ export default function AgendamentoFormScreen({ route, navigation }) {
       }, 0);
       setValorTexto(maskCurrency(soma));
     }
+    if (!duracaoEditado) {
+      const somaMin = selecionados.reduce((acc, sid) => {
+        const s = servicos.find((x) => x.id === sid);
+        return acc + Number(s?.duracao || 0);
+      }, 0);
+      if (somaMin > 0) setDuracao(String(somaMin));
+    }
   }
 
   function toggleServicoPacote(id) {
-    setServicosSelecionados((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
+    setServicosSelecionados((prev) => {
+      const next = prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id];
+      if (!duracaoEditado) {
+        const somaMin = next.reduce((acc, sid) => {
+          const s = servicos.find((x) => x.id === sid);
+          return acc + Number(s?.duracao || 0);
+        }, 0);
+        if (somaMin > 0) setDuracao(String(somaMin));
+      }
+      return next;
+    });
   }
 
   function usarSoma() {
@@ -180,7 +213,24 @@ export default function AgendamentoFormScreen({ route, navigation }) {
 
   function validar() {
     const novosErros = {};
+    const duracaoNum = parseInt(duracao || '0', 10) || 0;
     if (!clienteId) novosErros.cliente = 'Selecione a cliente';
+    if (duracaoNum <= 0) novosErros.duracao = 'Informe a duração do atendimento';
+
+    const start = horaParaMin(hora);
+    const end = start + duracaoNum;
+    const conflito = agendamentos.some((a) => {
+      if (a.id === existente?.id) return false;
+      if (a.data !== data) return false;
+      if (a.status === 'cancelado') return false;
+      const aStart = horaParaMin(a.hora);
+      const aEnd = aStart + (Number(a.duracao || 0) || 0);
+      return start < aEnd && end > aStart;
+    });
+    if (conflito) {
+      novosErros.hora = `Já existe atendimento de ${hora} às ${minParaHora(end)}`;
+    }
+
     if (usarPacote) {
       if (!pacoteVendaId) novosErros.pacote = 'Selecione o pacote';
       if (servicosSelecionados.length === 0) novosErros.servicos = 'Selecione ao menos um serviço do pacote';
@@ -220,6 +270,23 @@ export default function AgendamentoFormScreen({ route, navigation }) {
     let sinal = 0;
     let pacoteVendaIdFinal = null;
 
+    const valorNum = parseCurrencyInput(valorTexto);
+    const sinalNum = parseCurrencyInput(sinalTexto);
+    const duracaoNum = parseInt(duracao || '0', 10) || 0;
+    const pagoAtivo = Boolean(pago) || sinalNum >= valorNum;
+    const contaCalc = () => {
+      if (status === 'cancelado') return { status: 'pendente', valorPago: 0, dataPagamento: null, vencimento: data };
+      if (pagoAtivo) {
+        return { status: 'quitado', valorPago: valorNum, dataPagamento: dataPagamento || todayISO(), vencimento: data };
+      }
+      return {
+        status: 'pendente',
+        valorPago: status === 'concluido' ? sinalNum : sinalNum,
+        dataPagamento: sinalNum > 0 ? dataPagamento || todayISO() : null,
+        vencimento: data,
+      };
+    };
+
     if (usarPacote) {
       pacoteVendaIdFinal = pacoteVendaId;
       if (pacoteVendaIdFinal && servicosSelecionados.length > 0) {
@@ -240,6 +307,7 @@ export default function AgendamentoFormScreen({ route, navigation }) {
       pacoteVendaId: pacoteVendaIdFinal,
       status,
       sorteio: Boolean(sorteio),
+      duracao: duracaoNum,
       observacoes: observacoes.trim(),
     };
 
@@ -249,15 +317,15 @@ export default function AgendamentoFormScreen({ route, navigation }) {
         if (sorteio || valor <= 0) {
           deleteConta(contaVinculada.id);
         } else {
-          const statusConta = status === 'concluido' ? 'quitado' : sinal >= valor ? 'quitado' : 'pendente';
+          const cc = contaCalc();
           updateConta(contaVinculada.id, {
             descricao: `${nomesServicos || 'Serviço'} - ${cliente?.nome || ''}`,
             valor,
-            valorPago: sinal,
-            vencimento: data,
+            valorPago: cc.valorPago,
+            vencimento: cc.vencimento,
             clienteId,
-            status: statusConta,
-            dataPagamento: statusConta === 'quitado' ? todayISO() : null,
+            status: cc.status,
+            dataPagamento: cc.dataPagamento,
           });
         }
       }
@@ -266,18 +334,18 @@ export default function AgendamentoFormScreen({ route, navigation }) {
       const criaConta = (gerarConta || sinal > 0) && valor > 0 && !sorteio;
       if (!usarPacote && criaConta) {
         const centro = centroServicoPadrao();
-        const statusConta = status === 'concluido' ? 'quitado' : sinal >= valor ? 'quitado' : 'pendente';
+        const cc = contaCalc();
         addConta({
           tipo: 'receber',
           descricao: `${nomesServicos || 'Serviço'} - ${cliente?.nome || ''}`,
           valor,
-          valorPago: sinal,
-          vencimento: data,
+          valorPago: cc.valorPago,
+          vencimento: cc.vencimento,
           centroCustoId: centro ? centro.id : null,
           clienteId,
           agendamentoId: novo.id,
-          status: statusConta,
-          dataPagamento: statusConta === 'quitado' ? todayISO() : null,
+          status: cc.status,
+          dataPagamento: cc.dataPagamento,
         });
       }
     }
@@ -490,6 +558,53 @@ export default function AgendamentoFormScreen({ route, navigation }) {
           value={status}
           onChange={setStatus}
         />
+
+        <Input
+          label="Duração estimada (minutos)"
+          required
+          value={duracao}
+          onChangeText={(t) => {
+            setDuracao((t || '').replace(/\D/g, ''));
+            setDuracaoEditado(true);
+            if (parseInt(t.replace(/\D/g, ''), 10) > 0) setErros((p) => ({ ...p, duracao: undefined }));
+          }}
+          placeholder="Ex: 45"
+          keyboardType="number-pad"
+          error={erros.duracao}
+          style={{ marginTop: spacing.md }}
+        />
+        {duracaoSugerida > 0 ? (
+          <TouchableOpacity
+            onPress={() => {
+              setDuracao(String(duracaoSugerida));
+              setDuracaoEditado(false);
+              setErros((p) => ({ ...p, duracao: undefined }));
+            }}
+            style={styles.recalcularWrap}
+          >
+            <Text style={styles.recalcular}>Sugestão: soma dos serviços ({duracaoSugerida} min)</Text>
+          </TouchableOpacity>
+        ) : null}
+
+        {!usarPacote && !sorteio && (status === 'agendado' || status === 'concluido') ? (
+          <TouchableOpacity style={styles.switchRow} onPress={() => setPago((v) => !v)} activeOpacity={0.8}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.switchTitle}>Já foi pago</Text>
+              <Text style={styles.switchSubtitle}>
+                {pago ? 'Conta a receber será marcada como quitada' : 'A conta a receber permanecerá pendente'}
+              </Text>
+            </View>
+            <Switch
+              value={pago}
+              onValueChange={setPago}
+              trackColor={{ false: colors.border, true: colors.primaryLight }}
+              thumbColor={pago ? colors.primary : '#fff'}
+            />
+          </TouchableOpacity>
+        ) : null}
+        {pago && !usarPacote && !sorteio && (status === 'agendado' || status === 'concluido') ? (
+          <DateField label="Data do pagamento" value={dataPagamento} onChange={setDataPagamento} />
+        ) : null}
 
         <Input
           label="Observações"

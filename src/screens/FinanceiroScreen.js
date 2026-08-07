@@ -7,6 +7,7 @@ import EmptyState from '../components/EmptyState';
 import StatusBadge from '../components/StatusBadge';
 import SegmentedControl from '../components/SegmentedControl';
 import PeriodFilter from '../components/PeriodFilter';
+import DateField from '../components/DateField';
 import Fab from '../components/Fab';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -20,6 +21,7 @@ import {
   maskCurrencyInput,
   parseCurrencyInput,
   contaInPeriodo,
+  todayISO,
 } from '../utils/format';
 
 export default function FinanceiroScreen({ navigation }) {
@@ -31,6 +33,7 @@ export default function FinanceiroScreen({ navigation }) {
 
   const [pagamento, setPagamento] = useState(null); // conta em pagamento
   const [pagamentoTexto, setPagamentoTexto] = useState('');
+  const [pagamentoData, setPagamentoData] = useState(todayISO());
   const [erroPagamento, setErroPagamento] = useState('');
 
   const listaFiltrada = useMemo(() => {
@@ -53,6 +56,7 @@ export default function FinanceiroScreen({ navigation }) {
   function abrirPagamento(conta) {
     setPagamento(conta);
     setPagamentoTexto('');
+    setPagamentoData(todayISO());
     setErroPagamento('');
   }
 
@@ -62,7 +66,7 @@ export default function FinanceiroScreen({ navigation }) {
       setErroPagamento('Informe um valor válido');
       return;
     }
-    pagarConta(pagamento.id, valor);
+    pagarConta(pagamento.id, valor, pagamentoData);
     showToast(pagamento.tipo === 'pagar' ? 'Pagamento registrado' : 'Recebimento registrado');
     setPagamento(null);
   }
@@ -221,6 +225,7 @@ export default function FinanceiroScreen({ navigation }) {
                     Pagar valor restante ({formatCurrency(Number(pagamento.valor || 0) - Number(pagamento.valorPago || 0))})
                   </Text>
                 </TouchableOpacity>
+                <DateField label="Data do pagamento" value={pagamentoData} onChange={setPagamentoData} />
                 <Button title="Confirmar" onPress={confirmarPagamento} style={{ marginTop: spacing.sm }} />
                 <Button title="Cancelar" variant="ghost" onPress={() => setPagamento(null)} style={{ marginTop: spacing.sm }} />
               </>
