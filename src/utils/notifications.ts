@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { STORAGE_KEYS, loadItem, saveItem } from './storage';
 import { todayISO, formatDateShortWeekday } from './format';
+import type { Agendamento, Cliente, Servico } from '../types/entities';
 
 export const SUMMARY_HOUR = 6;
 export const SUMMARY_MINUTE = 0;
@@ -36,7 +37,7 @@ export async function ensureNotificationChannel() {
   }
 }
 
-export async function ensurePermissions() {
+export async function ensurePermissions(): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
   if (
     current.granted ||
@@ -51,27 +52,27 @@ export async function ensurePermissions() {
   );
 }
 
-export async function isNotificationsEnabled() {
-  const value = await loadItem(STORAGE_KEYS.NOTIFICACOES_ENABLED, null);
+export async function isNotificationsEnabled(): Promise<boolean> {
+  const value = await loadItem<boolean | null>(STORAGE_KEYS.NOTIFICACOES_ENABLED, null);
   return value === null ? true : value === true;
 }
 
-export async function setNotificationsEnabled(enabled) {
+export async function setNotificationsEnabled(enabled: boolean) {
   await saveItem(STORAGE_KEYS.NOTIFICACOES_ENABLED, Boolean(enabled));
 }
 
-function pad(n) {
+function pad(n: number) {
   return String(n).padStart(2, '0');
 }
 
-function addDaysISO(iso, days) {
+function addDaysISO(iso: string, days: number): string {
   const [y, m, d] = iso.split('-').map(Number);
   const date = new Date(y, m - 1, d);
   date.setDate(date.getDate() + days);
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-function serviceNames(servicos, agendamento) {
+function serviceNames(servicos: Servico[], agendamento: Agendamento): string {
   if (Array.isArray(agendamento.servicos) && agendamento.servicos.length > 0) {
     return agendamento.servicos
       .map((id) => (servicos || []).find((s) => s.id === id)?.nome)
@@ -81,12 +82,17 @@ function serviceNames(servicos, agendamento) {
   return agendamento.servico || '';
 }
 
-function clienteNome(clientes, id) {
+function clienteNome(clientes: Cliente[], id: string): string {
   const c = (clientes || []).find((x) => x.id === id);
   return c ? c.nome : 'Cliente';
 }
 
-function buildDaySummary(agendamentos, clientes, servicos, dayISO) {
+function buildDaySummary(
+  agendamentos: Agendamento[],
+  clientes: Cliente[],
+  servicos: Servico[],
+  dayISO: string
+): string | null {
   const doDia = agendamentos
     .filter((a) => a.data === dayISO && a.status !== 'cancelado')
     .sort((a, b) => (a.hora || '').localeCompare(b.hora || ''));
@@ -100,7 +106,11 @@ function buildDaySummary(agendamentos, clientes, servicos, dayISO) {
 }
 
 // Cancela tudo e re-agenda: lembretes 1h antes + resumo da agenda às 06:00 dos próximos 7 dias.
-export async function syncNotifications(agendamentos, clientes, servicos) {
+export async function syncNotifications(
+  agendamentos: Agendamento[],
+  clientes: Cliente[],
+  servicos: Servico[]
+): Promise<void> {
   try {
     await Notifications.cancelAllScheduledNotificationsAsync();
 
@@ -134,9 +144,7 @@ export async function syncNotifications(agendamentos, clientes, servicos) {
       const dia = addDaysISO(hoje, i);
       const body = buildDaySummary(agendamentos, clientes, servicos, dia);
       if (!body) continue;
-      const trigger = new Date(
-        `${dia}T${pad(SUMMARY_HOUR)}:${pad(SUMMARY_MINUTE)}:00`
-      );
+      const trigger = new Date(`${dia}T${pad(SUMMARY_HOUR)}:${pad(SUMMARY_MINUTE)}:00`);
       if (trigger.getTime() <= agora) continue;
       await Notifications.scheduleNotificationAsync({
         content: {
@@ -158,7 +166,7 @@ export async function cancelAllNotifications() {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
-export async function getPermissionStatus() {
+export async function getPermissionStatus(): Promise<boolean> {
   const p = await Notifications.getPermissionsAsync();
   return (
     p.granted ||

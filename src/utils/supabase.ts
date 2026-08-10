@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type Session, type SupabaseClient, type User } from '@supabase/supabase-js';
 import * as Linking from 'expo-linking';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
@@ -10,11 +10,11 @@ export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 export const SCHEME = 'manicureapp';
 
-export function isSupabaseConfigured() {
+export function isSupabaseConfigured(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 }
 
-export const supabase = isSupabaseConfigured()
+export const supabase: SupabaseClient | null = isSupabaseConfigured()
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
         storage: AsyncStorage,
@@ -25,13 +25,14 @@ export const supabase = isSupabaseConfigured()
     })
   : null;
 
-export function getSession() {
-  if (!supabase) return Promise.resolve(null);
-  return supabase.auth.getSession().then(({ data }) => data?.session || null);
+export async function getSession(): Promise<Session | null> {
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data?.session || null;
 }
 
 // Abre o fluxo OAuth do Google via Supabase e troca o código pela sessão
-export async function signInWithGoogle() {
+export async function signInWithGoogle(): Promise<User | null> {
   if (!supabase || !isSupabaseConfigured()) {
     throw new Error('Supabase não configurado. Preencha SUPABASE_URL e SUPABASE_ANON_KEY.');
   }
@@ -58,7 +59,7 @@ export async function signInWithGoogle() {
   return data.user;
 }
 
-export async function signOut() {
+export async function signOut(): Promise<void> {
   if (!supabase) return;
   await supabase.auth.signOut();
 }

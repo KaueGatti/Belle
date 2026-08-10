@@ -460,7 +460,7 @@ funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpil
 - `App.js` → `App.tsx` (git rename; apenas cast no polyfill do `global.crypto`, que é
   **necessário antes de `createClient`** no `supabase`).
 
-## Fases 1–3 ✔ (núcleo)
+## Fases 1–3 ✔ (núcleo + utils/contexts)
 - **`src/types/entities.ts`** — tipos das 7 entidades + `DadosApp`/`BackupSnapshot`/`RegistroRemoto`/
   `Tombstone`/`SyncMeta`. Notas de modelagem:
   - `Servico` usa `preco` e `duracao` (não `valor`).
@@ -471,14 +471,20 @@ funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpil
 - **`src/types/navigation.ts`** — `StackParamList` + `TabParamList` (usar quando as telas virarem TS).
 - **`src/navigation/AppNavigator.tsx`** — `useStackScreenOptions(): NativeStackNavigationOptions`
   (contextual typing resolve o `fontWeight`); `ICONS` tipado com `keyof typeof Ionicons.glyphMap`.
+- **`src/context/AuthContext.tsx`** / **`src/context/SyncContext.tsx`** — valores de contexto
+  tipados (`AuthContextValue`, `SyncContextValue`); `syncingRef`/`debounceRef`/`prevIdsRef`.
 - **`src/theme/colors.ts`**, **`src/utils/format.ts`** (novos tipos `MoneyValue`, `PeriodoKey`,
-  `PeriodRange`, `ContaPeriodo`), **`src/utils/storage.ts`** (`loadItem<T>`, `STORAGE_KEYS as const`).
+  `PeriodRange`, `ContaPeriodo`), **`src/utils/storage.ts`** (`loadItem<T>`, `STORAGE_KEYS as const`),
+  **`src/utils/supabase.ts`** (`supabase: SupabaseClient | null`, `Session`/`User`),
+  **`src/utils/sync.ts`** (`DadosApp`/`RegistroRemoto`/`Tombstone`; `computePushPlan(): PushPlan`;
+  união de arrays por `ent` resolvida com `(x as { id })` onde o TS não deduz), **`src/utils/backup.ts`**
+  (`collectSnapshot(): Promise<BackupSnapshot>`), **`src/utils/notifications.ts`**
+  (`syncNotifications(agendamentos, clientes, servicos)` tipado).
 
 ## Estado atual
-- Convertidos: `App`, `DataContext`, `AppNavigator`, `theme/colors`, `utils/format`, `utils/storage`,
-  `types/*`.
-- **Ainda `.js`** (convertidos conforme forem tocados): 17 telas, 18 componentes,
-  `utils/notifications|backup|sync|supabase`, `SyncContext`, `AuthContext`. Importam os `.ts`
+- Convertidos: `App`, `DataContext`, `AuthContext`, `SyncContext`, `AppNavigator`, `theme/colors`,
+  `utils/format|storage|supabase|sync|backup|notifications`, `types/*`.
+- **Ainda `.js`** (convertidos conforme forem tocados): 17 telas, 18 componentes. Importam os `.ts`
   normalmente (misto permitido por `allowJs`).
 - Validação contínua: `npx tsc --noEmit` + `npx expo export --platform android`.
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 import { useData } from './DataContext';
 import { useAuth } from './AuthContext';
@@ -11,10 +11,19 @@ import {
   mergeLocalRemote,
   pushChanges,
 } from '../utils/sync';
+import type { DadosApp, Tombstone } from '../types/entities';
 
-const SyncContext = createContext(null);
+interface SyncContextValue {
+  syncing: boolean;
+  ultimaSync: number | null;
+  ultimoErro: string | null;
+  syncNow: () => Promise<boolean>;
+  configurado: boolean;
+}
 
-export function SyncProvider({ children }) {
+const SyncContext = createContext<SyncContextValue | null>(null);
+
+export function SyncProvider({ children }: { children: ReactNode }) {
   const {
     clientes,
     agendamentos,
@@ -28,17 +37,17 @@ export function SyncProvider({ children }) {
   const { user } = useAuth();
 
   const [syncing, setSyncing] = useState(false);
-  const [ultimaSync, setUltimaSync] = useState(null);
-  const [ultimoErro, setUltimoErro] = useState(null);
+  const [ultimaSync, setUltimaSync] = useState<number | null>(null);
+  const [ultimoErro, setUltimoErro] = useState<string | null>(null);
 
   const syncingRef = useRef(false);
-  const debounceRef = useRef(null);
-  const prevIdsRef = useRef(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevIdsRef = useRef<Record<string, Set<string>> | null>(null);
   const readyRef = useRef(false);
 
   const configured = Boolean(supabase && isSupabaseConfigured());
 
-  const localDados = {
+  const localDados: DadosApp = {
     clientes,
     agendamentos,
     contas,
@@ -48,7 +57,7 @@ export function SyncProvider({ children }) {
     pacotesVendidos,
   };
 
-  async function syncNow() {
+  async function syncNow(): Promise<boolean> {
     if (!configured || !user) return false;
     if (syncingRef.current) return false;
     syncingRef.current = true;
@@ -67,7 +76,7 @@ export function SyncProvider({ children }) {
       setUltimoErro(null);
       return true;
     } catch (e) {
-      setUltimoErro(String(e?.message || e));
+      setUltimoErro(String(e instanceof Error ? e.message : e));
       return false;
     } finally {
       syncingRef.current = false;
@@ -81,7 +90,7 @@ export function SyncProvider({ children }) {
       readyRef.current = false;
       return;
     }
-    const init = {};
+    const init: Record<string, Set<string>> = {};
     for (const ent of ENTITIES) init[ent] = new Set((localDados[ent] || []).map((r) => r.id));
     prevIdsRef.current = init;
     readyRef.current = true;
@@ -100,11 +109,11 @@ export function SyncProvider({ children }) {
   useEffect(() => {
     if (!user) return;
 
-    const current = {};
+    const current: Record<string, Set<string>> = {};
     for (const ent of ENTITIES) current[ent] = new Set((localDados[ent] || []).map((r) => r.id));
 
     if (readyRef.current && prevIdsRef.current) {
-      const tombstones = [];
+      const tombstones: Tombstone[] = [];
       for (const ent of ENTITIES) {
         for (const id of prevIdsRef.current[ent]) {
           if (!current[ent].has(id)) tombstones.push({ id, entidade: ent, deletedAt: Date.now() });
@@ -124,7 +133,7 @@ export function SyncProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos]);
 
-  const value = { syncing, ultimaSync, ultimoErro, syncNow, configurado: configured };
+  const value: SyncContextValue = { syncing, ultimaSync, ultimoErro, syncNow, configurado: configured };
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }

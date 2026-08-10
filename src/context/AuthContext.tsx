@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import type { User } from '@supabase/supabase-js';
 import {
   supabase,
   isSupabaseConfigured,
@@ -7,20 +8,29 @@ import {
   signOut as supabaseSignOut,
 } from '../utils/supabase';
 
-const AuthContext = createContext(null);
+interface AuthContextValue {
+  user: User | null;
+  carregando: boolean;
+  supabaseConfigurado: boolean;
+  signInWithGoogle: () => Promise<User | null>;
+  signOut: () => Promise<void>;
+}
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
     let mounted = true;
+    const client = supabase;
+    if (!client || !isSupabaseConfigured()) {
+      setCarregando(false);
+      return;
+    }
 
     (async () => {
-      if (!supabase || !isSupabaseConfigured()) {
-        setCarregando(false);
-        return;
-      }
       try {
         const session = await getSession();
         if (mounted) setUser(session?.user || null);
@@ -28,7 +38,7 @@ export function AuthProvider({ children }) {
         if (mounted) setCarregando(false);
       }
 
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
         if (mounted) setUser(session?.user || null);
       });
 
@@ -47,7 +57,7 @@ export function AuthProvider({ children }) {
     await supabaseSignOut();
   }
 
-  const value = {
+  const value: AuthContextValue = {
     user,
     carregando,
     supabaseConfigurado: Boolean(supabase && isSupabaseConfigured()),
