@@ -227,7 +227,13 @@ export default function VendaPacoteScreen({ route, navigation }) {
         ) : null}
 
         <Text style={styles.label}>Data da venda</Text>
-        <DateField value={dataVenda} onChange={setDataVenda} />
+        <DateField
+          value={dataVenda}
+          onChange={(d) => {
+            setDataVenda(d);
+            setDataRecebimento(d);
+          }}
+        />
 
         <Input
           label="Valor já recebido na venda"

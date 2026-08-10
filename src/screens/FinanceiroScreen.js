@@ -52,6 +52,8 @@ export default function FinanceiroScreen({ navigation }) {
   }, [contas, tipo, periodo]);
 
   const acaoLabel = tipo === 'pagar' ? 'Pago' : 'Recebido';
+  const quitadoCor = tipo === 'pagar' ? colors.danger : colors.success;
+  const quitadoFundo = tipo === 'pagar' ? colors.dangerLight : colors.successLight;
 
   function abrirPagamento(conta) {
     setPagamento(conta);
@@ -94,9 +96,9 @@ export default function FinanceiroScreen({ navigation }) {
             <Text style={[styles.totalLabel, { color: colors.warning }]}>Pendente</Text>
             <Text style={[styles.totalValor, { color: colors.warning }]}>{formatCurrency(totais.pendente)}</Text>
           </Card>
-          <Card style={[styles.totalCard, { backgroundColor: colors.successLight, borderColor: colors.successLight }]}>
-            <Text style={[styles.totalLabel, { color: colors.success }]}>{acaoLabel}</Text>
-            <Text style={[styles.totalValor, { color: colors.success }]}>{formatCurrency(totais.quitado)}</Text>
+          <Card style={[styles.totalCard, { backgroundColor: quitadoFundo, borderColor: quitadoFundo }]}>
+            <Text style={[styles.totalLabel, { color: quitadoCor }]}>{acaoLabel}</Text>
+            <Text style={[styles.totalValor, { color: quitadoCor }]}>{formatCurrency(totais.quitado)}</Text>
           </Card>
         </View>
 

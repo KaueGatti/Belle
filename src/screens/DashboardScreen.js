@@ -120,7 +120,12 @@ export default function DashboardScreen({ navigation }) {
               <TouchableOpacity
                 key={a.id}
                 activeOpacity={0.7}
-                onPress={() => navigation.navigate('AgendamentoDetalhe', { agendamentoId: a.id })}
+                onPress={() =>
+                  navigation.navigate('AgendaTab', {
+                    screen: 'AgendamentoForm',
+                    params: { agendamentoId: a.id },
+                  })
+                }
               >
                 <Card style={styles.agendamentoCard}>
                   <LinearGradient

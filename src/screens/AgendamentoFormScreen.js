@@ -68,7 +68,14 @@ export default function AgendamentoFormScreen({ route, navigation }) {
   const [erros, setErros] = useState({});
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: existente ? 'Editar Agendamento' : 'Novo Agendamento' });
+    navigation.setOptions({
+      title: existente ? 'Editar Agendamento' : 'Novo Agendamento',
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.popToTop()} activeOpacity={0.7}>
+          <Text style={styles.sairBtn}>Sair</Text>
+        </TouchableOpacity>
+      ),
+    });
   }, [navigation, existente]);
 
   const contaVinculada = useMemo(
@@ -211,12 +218,8 @@ export default function AgendamentoFormScreen({ route, navigation }) {
     );
   }
 
-  function validar() {
-    const novosErros = {};
+  function mensagemConflito() {
     const duracaoNum = parseInt(duracao || '0', 10) || 0;
-    if (!clienteId) novosErros.cliente = 'Selecione a cliente';
-    if (duracaoNum <= 0) novosErros.duracao = 'Informe a duração do atendimento';
-
     const start = horaParaMin(hora);
     const end = start + duracaoNum;
     const conflito = agendamentos.some((a) => {
@@ -227,8 +230,27 @@ export default function AgendamentoFormScreen({ route, navigation }) {
       const aEnd = aStart + (Number(a.duracao || 0) || 0);
       return start < aEnd && end > aStart;
     });
-    if (conflito) {
-      novosErros.hora = `Já existe atendimento de ${hora} às ${minParaHora(end)}`;
+    if (conflito) return `Já existe atendimento de ${hora} às ${minParaHora(end)}`;
+    return null;
+  }
+
+  function validar() {
+    const novosErros = {};
+    const duracaoNum = parseInt(duracao || '0', 10) || 0;
+    if (!clienteId) novosErros.cliente = 'Selecione a cliente';
+    if (duracaoNum <= 0) novosErros.duracao = 'Informe a duração do atendimento';
+
+    const msgConflito = mensagemConflito();
+    if (msgConflito) novosErros.hora = msgConflito;
+
+    if (
+      pago &&
+      !usarPacote &&
+      !sorteio &&
+      (status === 'agendado' || status === 'concluido') &&
+      !dataPagamento
+    ) {
+      novosErros.dataPagamento = 'Informe a data do pagamento';
     }
 
     if (usarPacote) {
@@ -253,7 +275,13 @@ export default function AgendamentoFormScreen({ route, navigation }) {
   }
 
   function handleSalvar() {
-    if (!validar()) return;
+    if (!validar()) {
+      const msgConflito = mensagemConflito();
+      if (msgConflito) {
+        Alert.alert('Horário ocupado', msgConflito);
+      }
+      return;
+    }
 
     // Devolve os serviços usados do pacote anterior antes de reaplicar (edição)
     if (existente?.pacoteVendaId && Array.isArray(existente.servicos)) {
@@ -548,17 +576,6 @@ export default function AgendamentoFormScreen({ route, navigation }) {
           </>
         )}
 
-        <Text style={styles.label}>Status</Text>
-        <SegmentedControl
-          options={[
-            { label: 'Agendado', value: 'agendado' },
-            { label: 'Concluído', value: 'concluido' },
-            { label: 'Cancelado', value: 'cancelado' },
-          ]}
-          value={status}
-          onChange={setStatus}
-        />
-
         <Input
           label="Duração estimada (minutos)"
           required
@@ -605,6 +622,20 @@ export default function AgendamentoFormScreen({ route, navigation }) {
         {pago && !usarPacote && !sorteio && (status === 'agendado' || status === 'concluido') ? (
           <DateField label="Data do pagamento" value={dataPagamento} onChange={setDataPagamento} />
         ) : null}
+        {pago && !usarPacote && !sorteio && (status === 'agendado' || status === 'concluido') && erros.dataPagamento ? (
+          <Text style={styles.erroText}>{erros.dataPagamento}</Text>
+        ) : null}
+
+        <Text style={styles.label}>Status</Text>
+        <SegmentedControl
+          options={[
+            { label: 'Agendado', value: 'agendado' },
+            { label: 'Concluído', value: 'concluido' },
+            { label: 'Cancelado', value: 'cancelado' },
+          ]}
+          value={status}
+          onChange={setStatus}
+        />
 
         <Input
           label="Observações"
@@ -645,6 +676,7 @@ export default function AgendamentoFormScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row' },
+  sairBtn: { color: colors.primary, fontWeight: '700', fontSize: 15 },
   label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 6, marginTop: 4 },
   semServicos: {
     backgroundColor: colors.surfaceAlt,

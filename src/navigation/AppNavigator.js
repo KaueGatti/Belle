@@ -9,7 +9,6 @@ import { colors } from '../theme/colors';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import AgendamentoDetalheScreen from '../screens/AgendamentoDetalheScreen';
 import ClientesScreen from '../screens/ClientesScreen';
 import ClienteFormScreen from '../screens/ClienteFormScreen';
 import ClienteConsultaScreen from '../screens/ClienteConsultaScreen';
@@ -46,7 +45,6 @@ function DashboardStack() {
     <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Início' }} />
       <Stack.Screen name="Configuracoes" component={SettingsScreen} options={{ title: 'Configurações' }} />
-      <Stack.Screen name="AgendamentoDetalhe" component={AgendamentoDetalheScreen} options={{ title: 'Agendamento' }} />
     </Stack.Navigator>
   );
 }
