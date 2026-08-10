@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
+import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -28,7 +29,7 @@ import PacoteFormScreen from '../screens/PacoteFormScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-function useStackScreenOptions() {
+function useStackScreenOptions(): NativeStackNavigationOptions {
   return {
     headerStyle: { backgroundColor: colors.surface },
     headerTintColor: colors.textPrimary,
@@ -104,7 +105,7 @@ function ServicosStack() {
   );
 }
 
-const ICONS = {
+const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   DashboardTab: 'home',
   AgendaTab: 'calendar',
   ClientesTab: 'people',
@@ -132,7 +133,11 @@ export default function AppNavigator() {
           },
           tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={`${ICONS[route.name]}${focused ? '' : '-outline'}`} size={size - 2} color={color} />
+            <Ionicons
+              name={`${ICONS[route.name]}${focused ? '' : '-outline'}` as keyof typeof Ionicons.glyphMap}
+              size={size - 2}
+              color={color}
+            />
           ),
         })}
       >

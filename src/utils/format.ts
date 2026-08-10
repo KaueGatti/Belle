@@ -1,5 +1,7 @@
+export type MoneyValue = number | string;
+
 // Formata número para moeda BRL (ex: 1234.5 -> "R$ 1.234,50")
-export function formatCurrency(value) {
+export function formatCurrency(value: MoneyValue): string {
   const num = Number(value) || 0;
   return num.toLocaleString('pt-BR', {
     style: 'currency',
@@ -8,7 +10,7 @@ export function formatCurrency(value) {
 }
 
 // Converte texto digitado (aceita "1.234,56", "1234,56", "R$ 50,00" etc.) para número
-export function parseCurrencyInput(text) {
+export function parseCurrencyInput(text: MoneyValue): number {
   if (typeof text !== 'string') return Number(text) || 0;
   const cleaned = text.replace(/[^\d,.-]/g, '');
   const lastComma = cleaned.lastIndexOf(',');
@@ -26,14 +28,14 @@ export function parseCurrencyInput(text) {
 }
 
 // Formata um valor para texto mascarado de moeda: 1234.5 -> "R$ 1.234,50"
-export function maskCurrency(value) {
+export function maskCurrency(value: MoneyValue): string {
   const num = parseCurrencyInput(value);
   if (!num) return '';
   return formatCurrency(num);
 }
 
 // Máscara de moeda aplicada enquanto digita (baseada em centavos): "12" -> "R$ 0,12"
-export function maskCurrencyInput(text) {
+export function maskCurrencyInput(text: string): string {
   const digits = (text || '').replace(/\D/g, '').slice(0, 13);
   if (!digits) return '';
   const cents = parseInt(digits, 10);
@@ -41,7 +43,7 @@ export function maskCurrencyInput(text) {
 }
 
 // Máscara de porcentagem (0 a 100): "12" -> "12%"
-export function maskPercent(text) {
+export function maskPercent(text: string): string {
   const digits = (text || '').replace(/\D/g, '').slice(0, 3);
   if (!digits) return '';
   const num = Math.min(100, parseInt(digits, 10));
@@ -49,7 +51,7 @@ export function maskPercent(text) {
 }
 
 // Máscara de telefone brasileiro: "(11) 99999-9999" ou "(11) 9999-9999"
-export function maskPhone(text) {
+export function maskPhone(text: string): string {
   const digits = (text || '').replace(/\D/g, '').slice(0, 11);
   if (!digits) return '';
   if (digits.length <= 2) return `(${digits}`;
@@ -59,7 +61,7 @@ export function maskPhone(text) {
 }
 
 // Data no formato ISO 'YYYY-MM-DD' -> 'DD/MM/AAAA'
-export function formatDateBR(isoDate) {
+export function formatDateBR(isoDate?: string): string {
   if (!isoDate) return '';
   const [y, m, d] = isoDate.split('-');
   if (!y || !m || !d) return isoDate;
@@ -67,7 +69,7 @@ export function formatDateBR(isoDate) {
 }
 
 // Converte Date object -> 'YYYY-MM-DD'
-export function dateToISO(date) {
+export function dateToISO(date: Date): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
@@ -75,21 +77,21 @@ export function dateToISO(date) {
 }
 
 // Converte 'YYYY-MM-DD' -> Date object (meia-noite local)
-export function isoToDate(isoDate) {
+export function isoToDate(isoDate?: string): Date {
   if (!isoDate) return new Date();
   const [y, m, d] = isoDate.split('-').map(Number);
   return new Date(y, (m || 1) - 1, d || 1);
 }
 
 // Converte 'HH:mm' para total de minutos (ex: "12:45" -> 765)
-export function horaParaMin(hora) {
+export function horaParaMin(hora?: string | null): number {
   if (!hora || typeof hora !== 'string') return 0;
   const [h, m] = hora.split(':').map(Number);
   return (Number(h) || 0) * 60 + (Number(m) || 0);
 }
 
 // Converte total de minutos para 'HH:mm' (ex.: 765 -> "12:45")
-export function minParaHora(min) {
+export function minParaHora(min: number): string {
   const total = Math.max(0, Math.round(Number(min) || 0));
   const h = String(Math.floor(total / 60)).padStart(2, '0');
   const m = String(total % 60).padStart(2, '0');
@@ -97,40 +99,47 @@ export function minParaHora(min) {
 }
 
 // Soma 'n' minutos a uma hora 'HH:mm' e retorna a hora de término 'HH:mm'
-export function horaMaisMin(hora, min) {
+export function horaMaisMin(hora: string, min: number): string {
   return minParaHora(horaParaMin(hora) + (Number(min) || 0));
 }
 
 // Formata Date -> 'HH:mm'
-export function timeToString(date) {
+export function timeToString(date: Date): string {
   const h = String(date.getHours()).padStart(2, '0');
   const min = String(date.getMinutes()).padStart(2, '0');
   return `${h}:${min}`;
 }
 
-export function todayISO() {
+export function todayISO(): string {
   return dateToISO(new Date());
 }
 
 // Retorna nome do dia da semana + data por extenso curta (ex: "Seg, 05/08")
-export function formatDateShortWeekday(isoDate) {
+export function formatDateShortWeekday(isoDate: string): string {
   const date = isoToDate(isoDate);
   const dias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const dia = dias[date.getDay()];
   return `${dia}, ${formatDateBR(isoDate)}`;
 }
 
-export function isPast(isoDate) {
+export function isPast(isoDate: string): boolean {
   return isoDate < todayISO();
+}
+
+export type PeriodoKey = 'hoje' | 'ontem' | 'amanha' | 'semana' | 'mes' | 'custom' | null;
+
+export interface PeriodRange {
+  start: string; // 'YYYY-MM-DD'
+  end: string; // 'YYYY-MM-DD'
 }
 
 // Retorna o intervalo de datas { start, end } (ISO) para um preset de período.
 // key: hoje | ontem | amanha | semana | mes | custom | (null = todos)
 // start/end são 'YYYY-MM-DD' e comparáveis lexicograficamente.
-export function periodRange(key, customStart, customEnd) {
+export function periodRange(key: PeriodoKey, customStart?: string, customEnd?: string): PeriodRange | null {
   const hoje = new Date();
-  const iso = (d) => dateToISO(d);
-  const addDays = (d, n) => {
+  const iso = (d: Date) => dateToISO(d);
+  const addDays = (d: Date, n: number) => {
     const x = new Date(d);
     x.setDate(x.getDate() + n);
     return x;
@@ -163,14 +172,19 @@ export function periodRange(key, customStart, customEnd) {
   }
 }
 
+export interface ContaPeriodo {
+  vencimento?: string;
+  dataPagamento?: string | null;
+}
+
 // Verifica se uma conta pertence ao período (por vencimento ou data de pagamento)
-export function contaInPeriodo(conta, range) {
+export function contaInPeriodo(conta: ContaPeriodo, range: PeriodRange | null): boolean {
   if (!range) return true;
   const v = conta.vencimento || '';
   const p = conta.dataPagamento || '';
   return (v >= range.start && v <= range.end) || (p >= range.start && p <= range.end);
 }
 
-export function generateId(prefix = 'id') {
+export function generateId(prefix = 'id'): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }

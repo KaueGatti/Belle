@@ -45,6 +45,7 @@ projeto Supabase (URL + anon key em `src/utils/supabase.js`) — pendente.
 | Navegação por gestos/screens | `react-native-screens` | ~4.16.0 |
 | Status bar / nav bar | `expo-status-bar`, `expo-navigation-bar`, `expo-font` | — |
 | Babel | `babel-preset-expo` | ~54.0.12 |
+| Tipos | **TypeScript** (`typescript`, `@types/react`) | ~5.9.2 (devDependencies) |
 
 > Dependências adicionadas depois: **`expo-linear-gradient`** (via `npx expo install`) foi a base da estilização com gradientes.
 
@@ -54,24 +55,28 @@ projeto Supabase (URL + anon key em `src/utils/supabase.js`) — pendente.
 
 ```
 manicure-app/
-├── App.js                     # Entry point: providers + tela de loading com logo
+├── App.tsx                    # Entry point: providers + tela de loading com logo
 ├── app.json                   # Configuração do Expo
 ├── babel.config.js
+├── tsconfig.json              # TypeScript (strict) — extends expo/tsconfig.base
 ├── README.md                  # Docs em nível de produto
 ├── AGENTS.md                  # Este arquivo
 ├── src/
 │   ├── context/
-│   │   └── DataContext.js     # Estado global + persistência (AsyncStorage) + regras de negócio
-│   ├── components/            # Componentes reutilizáveis (ver seção própria)
+│   │   └── DataContext.tsx    # Estado global + persistência (AsyncStorage) + regras de negócio
+│   ├── components/            # Componentes reutilizáveis (ver seção própria; ainda .js)
 │   ├── navigation/
-│   │   └── AppNavigator.js    # Bottom tabs + 6 stacks
-│   ├── screens/               # 17 telas (ver seção própria)
+│   │   └── AppNavigator.tsx   # Bottom tabs + 6 stacks
+│   ├── screens/               # 17 telas (ver seção própria; ainda .js)
 │   ├── theme/
-│   │   └── colors.js          # Paleta, spacing, radius, typography
+│   │   └── colors.ts          # Paleta, spacing, radius, typography
+│   ├── types/                 # Tipos compartilhados
+│   │   ├── entities.ts        # Cliente, Agendamento, Conta, Servico, Pacote...
+│   │   └── navigation.ts      # StackParamList + TabParamList
 │   └── utils/
-│       ├── format.js          # Moeda, telefone, %, datas, máscaras
+│       ├── format.ts          # Moeda, telefone, %, datas, máscaras
 │       ├── notifications.js   # Agendamento de notificações locais (resumo diário + lembrete)
-│       └── storage.js         # Chaves AsyncStorage + load/save helpers
+│       └── storage.ts         # Chaves AsyncStorage + load/save helpers
 ```
 
 ---
@@ -86,7 +91,8 @@ npx expo export --platform android   # valida o bundle (usado como smoke test)
 ```
 
 **Validação sem rodar o app** (usado ao final de cada mudança):
-- Sintaxe: `node --check <arquivo>`
+- Sintaxe JS: `node --check <arquivo>`
+- Tipos TS: `npx tsc --noEmit` (para arquivos `.ts`/`.tsx`)
 - Bundle: `npx expo export --platform android` (gera `dist/`)
 
 > Mudanças relacionadas a nativo (ex.: `expo-linear-gradient`, `statusBarTranslucent`)
@@ -439,3 +445,51 @@ muda quando o binário nativo muda; enquanto o JS só for alterado, o OTA cobre.
 ---
 
 # Sessão: Cloud storage (Supabase) — preparação
+
+---
+
+# Sessão: Migração para TypeScript (incremental, em andamento)
+
+Migração **JS → TS** escolhida como **incremental** com `strict: true`. O app continua
+funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpila TS).
+
+## Fase 0 — Fundação ✔
+- `typescript ~5.9.2` + `@types/react ~19.1.10` em **devDependencies** (via `npx expo install`).
+- `tsconfig.json` — `extends: "expo/tsconfig.base"` + `"strict": true`. `allowJs` já vem do base;
+  os `.js` restantes não são checados (`checkJs` false) mas seguem funcionando.
+- `App.js` → `App.tsx` (git rename; apenas cast no polyfill do `global.crypto`, que é
+  **necessário antes de `createClient`** no `supabase`).
+
+## Fases 1–3 ✔ (núcleo)
+- **`src/types/entities.ts`** — tipos das 7 entidades + `DadosApp`/`BackupSnapshot`/`RegistroRemoto`/
+  `Tombstone`/`SyncMeta`. Notas de modelagem:
+  - `Servico` usa `preco` e `duracao` (não `valor`).
+  - `Agendamento` mantém legado: `servico?: string` (texto antigo) **ou** `servicos?: string[]`.
+- **`src/context/DataContext.tsx`** — estados tipados; `useData()` retorna `DataContextValue`
+  (exportado). Inputs das funções CRUD = `Partial<Omit<Entidade,'id'|'createdAt'|'updatedAt'>>`;
+  spreads de `Partial` usam cast `as Entidade` (TS não deduz campos obrigatórios de spread).
+- **`src/types/navigation.ts`** — `StackParamList` + `TabParamList` (usar quando as telas virarem TS).
+- **`src/navigation/AppNavigator.tsx`** — `useStackScreenOptions(): NativeStackNavigationOptions`
+  (contextual typing resolve o `fontWeight`); `ICONS` tipado com `keyof typeof Ionicons.glyphMap`.
+- **`src/theme/colors.ts`**, **`src/utils/format.ts`** (novos tipos `MoneyValue`, `PeriodoKey`,
+  `PeriodRange`, `ContaPeriodo`), **`src/utils/storage.ts`** (`loadItem<T>`, `STORAGE_KEYS as const`).
+
+## Estado atual
+- Convertidos: `App`, `DataContext`, `AppNavigator`, `theme/colors`, `utils/format`, `utils/storage`,
+  `types/*`.
+- **Ainda `.js`** (convertidos conforme forem tocados): 17 telas, 18 componentes,
+  `utils/notifications|backup|sync|supabase`, `SyncContext`, `AuthContext`. Importam os `.ts`
+  normalmente (misto permitido por `allowJs`).
+- Validação contínua: `npx tsc --noEmit` + `npx expo export --platform android`.
+
+## OTA / fingerprint (importante)
+- **não adicionar** scripts novos ao `package.json` agora: `packageJson:scripts` **entra no
+  fingerprint** (`runtimeVersion: fingerprint`). Código-fonte (`.ts`/`.tsx`), `tsconfig.json` e
+  devDependencies **não** alteram o fingerprint (verificado empíricamente — `npx @expo/fingerprint`).
+- Fingerprint atual inalterado (`53244638…`); muda apenas com `eas.json`, `.gitignore`, `app.json`,
+  scripts, ícones, autolinking nativo ou versões do `react-native`.
+- Regra: depois de **qualquer** mudança que mude o fingerprint, buildar/instalar novo APK antes do
+  próximo `eas update`.
+
+## Validação
+- `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK) + fingerprint intacto.

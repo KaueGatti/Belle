@@ -11,20 +11,22 @@ export const STORAGE_KEYS = {
   SEEDED: '@manicure_app:seeded_v1',
   NOTIFICACOES_ENABLED: '@manicure_app:notificacoes_enabled',
   SYNC_META: '@manicure_app:sync_meta',
-};
+} as const;
 
-export async function loadItem(key, fallback) {
+export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
+
+export async function loadItem<T>(key: string, fallback: T): Promise<T> {
   try {
     const raw = await AsyncStorage.getItem(key);
     if (raw === null || raw === undefined) return fallback;
-    return JSON.parse(raw);
+    return JSON.parse(raw) as T;
   } catch (e) {
     console.warn('Erro ao carregar', key, e);
     return fallback;
   }
 }
 
-export async function saveItem(key, value) {
+export async function saveItem(key: string, value: unknown): Promise<void> {
   try {
     await AsyncStorage.setItem(key, JSON.stringify(value));
   } catch (e) {
