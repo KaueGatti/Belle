@@ -1,6 +1,19 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, type KeyboardTypeOptions, type StyleProp, type ViewStyle } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
+
+interface InputProps {
+  label?: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  error?: string;
+  multiline?: boolean;
+  keyboardType?: KeyboardTypeOptions;
+  required?: boolean;
+  editable?: boolean;
+  style?: StyleProp<ViewStyle>;
+}
 
 export default function Input({
   label,
@@ -13,7 +26,7 @@ export default function Input({
   required = false,
   editable = true,
   style,
-}) {
+}: InputProps) {
   return (
     <View style={[styles.wrapper, style]}>
       {label ? (

@@ -75,7 +75,12 @@ function addDaysISO(iso: string, days: number): string {
 function serviceNames(servicos: Servico[], agendamento: Agendamento): string {
   if (Array.isArray(agendamento.servicos) && agendamento.servicos.length > 0) {
     return agendamento.servicos
-      .map((id) => (servicos || []).find((s) => s.id === id)?.nome)
+      .map((id) => {
+        const nome = (servicos || []).find((s) => s.id === id)?.nome;
+        if (!nome) return '';
+        const qtd = Number(agendamento.servicosQtd?.[id] || 0);
+        return qtd > 1 ? `${nome} x${qtd}` : nome;
+      })
       .filter(Boolean)
       .join(' + ');
   }

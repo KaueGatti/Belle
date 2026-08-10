@@ -2,8 +2,17 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, radius, spacing } from '../theme/colors';
 
-// options: [{ label, value }]
-export default function SegmentedControl({ options, value, onChange }) {
+interface SegmentedControlProps<T extends string> {
+  options: { label: string; value: T }[];
+  value: T;
+  onChange: (value: T) => void;
+}
+
+export default function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+}: SegmentedControlProps<T>) {
   return (
     <View style={styles.wrapper}>
       {options.map((opt) => {

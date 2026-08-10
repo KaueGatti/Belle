@@ -67,7 +67,7 @@ manicure-app/
 │   ├── components/            # Componentes reutilizáveis (ver seção própria; ainda .js)
 │   ├── navigation/
 │   │   └── AppNavigator.tsx   # Bottom tabs + 6 stacks
-│   ├── screens/               # 17 telas (ver seção própria; ainda .js)
+│   ├── screens/               # 19 telas (ver seção própria; misto .tsx/.js — migração em andamento)
 │   ├── theme/
 │   │   └── colors.ts          # Paleta, spacing, radius, typography
 │   ├── types/                 # Tipos compartilhados
@@ -128,10 +128,19 @@ Persistência: cada estado tem `useEffect` que grava no AsyncStorage somente ap�
 
 ---
 
-## Navegação (`src/navigation/AppNavigator.js`)
+## Navegação (`src/navigation/AppNavigator.tsx`)
 
-- 6 abas (Bottom Tabs): **Início (DashboardTab)**, **Agenda (AgendaTab)**, **Clientes**, **Serviços**, **Financeiro**, **Centro de Custo (Categorias)**.
-- Cada aba é uma `Stack`. Rotas de detalhe (formulários) ficam nelas: `AgendamentoForm`, `ClienteConsulta/Form/Historico/Pacotes`, `VendaPacote`, `ContaForm`, `CentroCustoForm`, `ServicoForm`, `PacoteForm`, `Configuracoes` (no stack do Dashboard).
+- **4 abas** (Bottom Tabs): **Início (DashboardTab)**, **Agenda (AgendaTab)**, **Clientes**, **Financeiro**.
+  (As abas **Serviços** e **Centro de Custo/Categorias** foram removidas; o acesso é pelo **FAB em leque**
+  `SpeedDial`, sobreposto ao Início.)
+- Cada aba é uma `Stack`. No **stack do Início** ficam: `Dashboard`, `Configuracoes`, `Servicos` (toggle
+  Serviços/Pacotes/Produtos), `ServicoForm`, `PacoteForm`, `ProdutoForm`, `VendaProduto`, `CentroCusto`,
+  `CentroCustoForm`. No stack de **Clientes**: `ClienteConsulta/Form/Historico/Pacotes` + `VendaPacote`.
+- **SpeedDial** (`src/components/SpeedDial.tsx`): FAB em leque com gradiente `primary→accent`; ações
+  Novo Agendamento, Cadastrar Cliente, Serviços & Pacotes, Produtos, Categorias, Vender Pacote e Nova Conta
+  (navegação cruzada via `createNavigationContainerRef<TabParamList>()`).
+- Navegação cruzada entre abas (ex.: telas do stack de Agenda → ClientesTab) via
+  `navigation.getParent<BottomTabNavigationProp<TabParamList>>()`.
 - Opções de stack via `useStackScreenOptions()` (header claro, sem sombra, `contentStyle` de fundo).
 - **Android**: `statusBarTranslucent: true` (substitui o antigo `headerStatusBarHeight`, que **não funciona** no native-stack 7.18.6 — ver bugs).
 - Título das abas centralizado com ícones Ionicons (`focused` = filled / outline).
@@ -144,16 +153,18 @@ Persistência: cada estado tem `useEffect` que grava no AsyncStorage somente ap�
 |------|------------------|
 | `DashboardScreen` | Hero gradiente + logo, stats a receber/pagar/saldo, QuickStats (Clientes/Hoje/Pendências), "Próximos agendamentos". |
 | `AgendaScreen` | SectionList por data, filtro Próximos 7 dias / Hoje / Todos, hora/serviço/valor/status. |
-| `AgendamentoFormScreen` | Criar/editar agendamento, multi-seleção de serviços, opção gerar conta, uso de pacote. |
+| `AgendamentoFormScreen` | Criar/editar agendamento: **qtds de serviço** (`StepperList`), **venda de produtos** (baixa estoque), **adicional livre**, valor automático (soma), **uso de pacote** (saldo limitado), **pop-up de conflito de horário**, modal "Gerar conta a receber?". |
 | `ClientesScreen` | Lista + busca por nome/telefone. |
 | `ClienteConsultaScreen` | Ficha da cliente, resumo de agendamentos/recebimento, **seção de pacote vigente**. |
 | `ClienteHistoricoScreen` | Histórico de atendimentos. |
-| `ClientePacotesScreen` | Pacotes da cliente. |
+| `ClientePacotesScreen` | Pacotes da cliente (`nomePacoteVenda`; excluir avisa sobre conta vinculada). |
 | `ClienteFormScreen` | Cadastro/edição/exclusão de cliente. |
-| `ServicosScreen` | Toggle **Serviços / Pacotes** com listas. |
+| `ServicosScreen` | Toggle **Serviços / Pacotes / Produtos** com listas + botão **Vender** (produto). |
 | `ServicoFormScreen` | CRUD de serviço. |
 | `PacoteFormScreen` | CRUD de pacote (serviço + qtd + valor). |
-| `VendaPacoteScreen` | Vende pacote a uma cliente com **desconto** (Percentual % ou Valor R$). |
+| `ProdutoFormScreen` | CRUD de produto (nome, preço, estoque). |
+| `VendaProdutoScreen` | Vende produtos a uma cliente (gera conta a receber + baixa estoque). |
+| `VendaPacoteScreen` | Vende pacote com **desconto** (% ou R$); toggle **catálogo × montar na venda** (pacote personalizado). |
 | `FinanceiroScreen` | Contas a pagar/receber, filtro por status, pagamento (modal), reverter. |
 | `ContaFormScreen` | CRUD de conta com centros de custo + cliente opcional. |
 | `CentroCustoScreen` | Categorias com quantidade e total. |
@@ -484,7 +495,10 @@ funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpil
 ## Estado atual
 - Convertidos: `App`, `DataContext`, `AuthContext`, `SyncContext`, `AppNavigator`, `theme/colors`,
   `utils/format|storage|supabase|sync|backup|notifications`, `types/*`.
-- **Ainda `.js`** (convertidos conforme forem tocados): 17 telas, 18 componentes. Importam os `.ts`
+- Componentes em TS: `AppModal`, `Button`, `Card`, `DateField`, `Input`, `QtyStepper`, `Screen`,
+  `SegmentedControl`, `SpeedDial`, `StepperList`, `TimeField`, `Toast`.
+- Telas em TS: `AgendamentoForm`, `ProdutoForm`, `Servicos`, `VendaPacote`, `VendaProduto`.
+- **Ainda `.js`** (convertidos conforme forem tocados): 14 telas, 10 componentes. Importam os `.ts`
   normalmente (misto permitido por `allowJs`).
 - Validação contínua: `npx tsc --noEmit` + `npx expo export --platform android`.
 
@@ -496,6 +510,46 @@ funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpil
   scripts, ícones, autolinking nativo ou versões do `react-native`.
 - Regra: depois de **qualquer** mudança que mude o fingerprint, buildar/instalar novo APK antes do
   próximo `eas update`.
+
+## Validação
+- `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK) + fingerprint intacto.
+
+---
+
+# Última Sessão (atual) — Ajustes de produto + navegação 4 abas (TypeScript)
+
+Unificação do trabalho de **ajustes de produto** (base de dados + telas novas) com o **TS incremental**.
+O fingerprint Android continua `5324463898446a60971b8fb1a468d0db4602f3f8` (só JS variou).
+
+## Base de dados (`DataContext`, `entities`, `storage`, `backup`, `sync`)
+- Entidade **`Produto`** (`{ id, nome, preco, estoque }`) + `ProdutoItem { produtoId, qtd }`; `produtos` em
+  `DadosApp`, `STORAGE_KEYS`, `DATA_KEYS`/`SNAPSHOT_KEYS`/`ENTITIES`.
+- `Agendamento`: novos campos `servicosQtd` (qtd por serviço), `produtos` (venda no ato), `adicional`,
+  `duracao`, `sorteio`, `pacoteVendaId`.
+- `PacoteVendido`: `pacoteId` pode ser `null` (personalizado) + `nome?` para pacote montado na venda.
+- `venderPacotePersonalizado(…)`, `venderProduto(…)` (conta a receber + baixa estoque), `nomePacoteVenda(…)`,
+  `debitar/restaurarPacote(…, quantidades?)`, `baixar/restaurarEstoqueProdutos(…)`, `produtoUsadoCount`,
+  `deletePacoteVenda` (exclui a conta vinculada), `deleteAgendamento` devolve saldo de pacote e estoque.
+- `SyncContext` passou a incluir `produtos` no espelho.
+
+## Nova navegação (4 abas)
+- `AppNavigator.tsx`: abas **Início / Agenda / Clientes / Financeiro**. Serviços/Pacotes/Produtos/Categorias
+  saíram da barra e viraram rotas do **stack do Início** + **`SpeedDial`** em leque (`HomeSpeedDial`) sobre o
+  Início com 7 ações (Novo Agendamento, Cadastrar Cliente, Serviços & Pacotes, Produtos, Categorias, Vender
+  Pacote, Nova Conta) via `createNavigationContainerRef<TabParamList>()`.
+- Navigators tipados (`createBottomTabNavigator<TabParamList>()` / `createNativeStackNavigator<StackParamList>()`);
+  navegação cruzada entre abas com `navigation.getParent<BottomTabNavigationProp<TabParamList>>()`.
+
+## Telas/componentes (TS)
+- Novas telas TS: `ProdutoFormScreen`, `VendaProdutoScreen`, `ServicosScreen` (toggle 3 segmentos + Vender),
+  `VendaPacoteScreen` (catálogo × **montar na venda**), `AgendamentoFormScreen` (qtds com `StepperList`,
+  venda de produtos, adicional livre, uso de pacote com saldo, pop-up de conflito, modal "Gerar conta a
+  receber?").
+- Componentes convertidos para `.tsx` (props opcionais tipados): `Button`, `Screen`, `Input`, `DateField`,
+  `TimeField`, `Toast` (contexto tipado — corrige `showToast` como `never`), `SegmentedControl` (genérico),
+  `Card`. Removidos os `.js` duplicados (AgendamentoForm/VendaPacote/ServicosScreen).
+- `ClientePacotesScreen` usa `nomePacoteVenda` (pacotes personalizados) e aviso de que excluir o pacote
+  também remove a conta a receber vinculada.
 
 ## Validação
 - `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK) + fingerprint intacto.

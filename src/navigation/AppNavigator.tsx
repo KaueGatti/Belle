@@ -1,12 +1,13 @@
 import React from 'react';
-import { Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { View, Platform } from 'react-native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import type { TabParamList, StackParamList } from '../types/navigation';
 
 import DashboardScreen from '../screens/DashboardScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -25,9 +26,13 @@ import CentroCustoFormScreen from '../screens/CentroCustoFormScreen';
 import ServicosScreen from '../screens/ServicosScreen';
 import ServicoFormScreen from '../screens/ServicoFormScreen';
 import PacoteFormScreen from '../screens/PacoteFormScreen';
+import ProdutoFormScreen from '../screens/ProdutoFormScreen';
+import VendaProdutoScreen from '../screens/VendaProdutoScreen';
+import SpeedDial, { type SpeedDialAction } from '../components/SpeedDial';
 
-const Tab = createBottomTabNavigator();
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
+const Stack = createNativeStackNavigator<StackParamList>();
+const navigationRef = createNavigationContainerRef<TabParamList>();
 
 function useStackScreenOptions(): NativeStackNavigationOptions {
   return {
@@ -40,13 +45,72 @@ function useStackScreenOptions(): NativeStackNavigationOptions {
   };
 }
 
+function HomeSpeedDial() {
+  const actions: SpeedDialAction[] = [
+    {
+      key: 'novo-agendamento',
+      icon: 'calendar',
+      label: 'Novo Agendamento',
+      onPress: () => navigationRef.navigate('AgendaTab', { screen: 'AgendamentoForm', params: { agendamentoId: null } }),
+    },
+    {
+      key: 'cadastrar-cliente',
+      icon: 'person-add',
+      label: 'Cadastrar Cliente',
+      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null } }),
+    },
+    {
+      key: 'servicos',
+      icon: 'cut',
+      label: 'Serviços & Pacotes',
+      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'servicos' } }),
+    },
+    {
+      key: 'produtos',
+      icon: 'bag-handle',
+      label: 'Produtos',
+      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'produtos' } }),
+    },
+    {
+      key: 'categorias',
+      icon: 'pricetags',
+      label: 'Categorias',
+      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'CentroCusto' }),
+    },
+    {
+      key: 'vender-pacote',
+      icon: 'gift',
+      label: 'Vender Pacote',
+      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'VendaPacote', params: { clienteId: null } }),
+    },
+    {
+      key: 'nova-conta',
+      icon: 'wallet',
+      label: 'Nova Conta',
+      onPress: () => navigationRef.navigate('FinanceiroTab', { screen: 'ContaForm', params: { contaId: null } }),
+    },
+  ];
+
+  return <SpeedDial actions={actions} />;
+}
+
 function DashboardStack() {
   const stackScreenOptions = useStackScreenOptions();
   return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Início' }} />
-      <Stack.Screen name="Configuracoes" component={SettingsScreen} options={{ title: 'Configurações' }} />
-    </Stack.Navigator>
+    <View style={{ flex: 1 }}>
+      <Stack.Navigator screenOptions={stackScreenOptions}>
+        <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Início' }} />
+        <Stack.Screen name="Configuracoes" component={SettingsScreen} options={{ title: 'Configurações' }} />
+        <Stack.Screen name="Servicos" component={ServicosScreen} options={{ title: 'Serviços & Pacotes' }} />
+        <Stack.Screen name="ServicoForm" component={ServicoFormScreen} />
+        <Stack.Screen name="PacoteForm" component={PacoteFormScreen} />
+        <Stack.Screen name="ProdutoForm" component={ProdutoFormScreen} />
+        <Stack.Screen name="VendaProduto" component={VendaProdutoScreen} options={{ title: 'Vender Produtos' }} />
+        <Stack.Screen name="CentroCusto" component={CentroCustoScreen} options={{ title: 'Centro de Custo' }} />
+        <Stack.Screen name="CentroCustoForm" component={CentroCustoFormScreen} />
+      </Stack.Navigator>
+      <HomeSpeedDial />
+    </View>
   );
 }
 
@@ -84,41 +148,18 @@ function FinanceiroStack() {
   );
 }
 
-function CentroCustoStack() {
-  const stackScreenOptions = useStackScreenOptions();
-  return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="CentroCusto" component={CentroCustoScreen} options={{ title: 'Centro de Custo' }} />
-      <Stack.Screen name="CentroCustoForm" component={CentroCustoFormScreen} />
-    </Stack.Navigator>
-  );
-}
-
-function ServicosStack() {
-  const stackScreenOptions = useStackScreenOptions();
-  return (
-    <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Servicos" component={ServicosScreen} options={{ title: 'Serviços' }} />
-      <Stack.Screen name="ServicoForm" component={ServicoFormScreen} />
-      <Stack.Screen name="PacoteForm" component={PacoteFormScreen} />
-    </Stack.Navigator>
-  );
-}
-
 const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   DashboardTab: 'home',
   AgendaTab: 'calendar',
   ClientesTab: 'people',
   FinanceiroTab: 'wallet',
-  CentroCustoTab: 'pricetags',
-  ServicosTab: 'cut',
 };
 
 export default function AppNavigator() {
   const insets = useSafeAreaInsets();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -144,9 +185,7 @@ export default function AppNavigator() {
         <Tab.Screen name="DashboardTab" component={DashboardStack} options={{ title: 'Início' }} />
         <Tab.Screen name="AgendaTab" component={AgendaStack} options={{ title: 'Agenda' }} />
         <Tab.Screen name="ClientesTab" component={ClientesStack} options={{ title: 'Clientes' }} />
-        <Tab.Screen name="ServicosTab" component={ServicosStack} options={{ title: 'Serviços' }} />
         <Tab.Screen name="FinanceiroTab" component={FinanceiroStack} options={{ title: 'Financeiro' }} />
-        <Tab.Screen name="CentroCustoTab" component={CentroCustoStack} options={{ title: 'Categorias' }} />
       </Tab.Navigator>
     </NavigationContainer>
   );

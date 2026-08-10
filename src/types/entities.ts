@@ -3,6 +3,20 @@ export type ContaTipo = 'pagar' | 'receber';
 export type ContaStatus = 'pendente' | 'quitado';
 export type CentroCustoTipo = 'receita' | 'despesa' | 'ambos';
 
+export interface ProdutoItem {
+  produtoId: string;
+  qtd: number;
+}
+
+export interface Produto {
+  id: string;
+  nome: string;
+  preco: number;
+  estoque: number;
+  createdAt: number;
+  updatedAt?: number;
+}
+
 export interface Cliente {
   id: string;
   nome: string;
@@ -21,6 +35,9 @@ export interface Agendamento {
   data: string; // 'YYYY-MM-DD'
   hora: string; // 'HH:mm'
   servicos?: string[];
+  servicosQtd?: Record<string, number>; // id do serviço -> quantidade
+  produtos?: ProdutoItem[]; // produtos vendidos no agendamento
+  adicional?: number; // valor extra livre (R$)
   servico?: string;
   valor: number;
   sinal?: number;
@@ -42,6 +59,7 @@ export interface Conta {
   centroCustoId?: string | null;
   clienteId?: string | null;
   agendamentoId?: string | null;
+  pacoteVendaId?: string | null;
   status: ContaStatus;
   valorPago: number;
   dataPagamento?: string | null;
@@ -83,7 +101,8 @@ export interface Pacote {
 
 export interface PacoteVendido {
   id: string;
-  pacoteId: string;
+  pacoteId: string | null; // null = pacote personalizado (montado na venda)
+  nome?: string; // nome do pacote personalizado (quando pacoteId é null)
   clienteId: string;
   vendidoEm: string; // 'YYYY-MM-DD'
   valor: number;
@@ -101,6 +120,7 @@ export interface DadosApp {
   servicos: Servico[];
   pacotes: Pacote[];
   pacotesVendidos: PacoteVendido[];
+  produtos: Produto[];
 }
 
 export interface BackupSnapshot {

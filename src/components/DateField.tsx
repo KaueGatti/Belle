@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { colors, radius, spacing } from '../theme/colors';
 import { formatDateBR, dateToISO, isoToDate } from '../utils/format';
 
+interface DateFieldProps {
+  label?: string;
+  value?: string;
+  onChange: (iso: string) => void;
+  required?: boolean;
+}
+
 // value: string ISO 'YYYY-MM-DD'
-export default function DateField({ label, value, onChange, required = false }) {
+export default function DateField({ label, value, onChange, required = false }: DateFieldProps) {
   const [show, setShow] = useState(false);
 
-  function handleChange(event, selectedDate) {
+  function handleChange(event: DateTimePickerEvent, selectedDate?: Date) {
     setShow(Platform.OS === 'ios');
     if (event.type === 'dismissed') {
       setShow(false);

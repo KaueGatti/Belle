@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { colors, radius, spacing } from '../theme/colors';
 import { timeToString } from '../utils/format';
 
+interface TimeFieldProps {
+  label?: string;
+  value?: string;
+  onChange: (hora: string) => void;
+  required?: boolean;
+}
+
 // value: string 'HH:mm'
-export default function TimeField({ label, value, onChange, required = false }) {
+export default function TimeField({ label, value, onChange, required = false }: TimeFieldProps) {
   const [show, setShow] = useState(false);
 
   function toDate() {
@@ -18,7 +25,7 @@ export default function TimeField({ label, value, onChange, required = false }) 
     return d;
   }
 
-  function handleChange(event, selectedDate) {
+  function handleChange(event: DateTimePickerEvent, selectedDate?: Date) {
     setShow(Platform.OS === 'ios');
     if (event.type === 'dismissed') {
       setShow(false);

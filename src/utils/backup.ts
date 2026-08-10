@@ -13,6 +13,7 @@ import type {
   DadosApp,
   Pacote,
   PacoteVendido,
+  Produto,
   Servico,
 } from '../types/entities';
 
@@ -26,6 +27,7 @@ const DATA_KEYS: StorageKey[] = [
   STORAGE_KEYS.SERVICOS,
   STORAGE_KEYS.PACOTES,
   STORAGE_KEYS.PACOTES_VENDIDOS,
+  STORAGE_KEYS.PRODUTOS,
 ];
 
 const SNAPSHOT_KEYS: (keyof DadosApp)[] = [
@@ -36,11 +38,12 @@ const SNAPSHOT_KEYS: (keyof DadosApp)[] = [
   'servicos',
   'pacotes',
   'pacotesVendidos',
+  'produtos',
 ];
 
 // Monta o snapshot completo com todos os dados locais
 export async function collectSnapshot(): Promise<BackupSnapshot> {
-  const [clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos] =
+  const [clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos] =
     await Promise.all([
       loadItem<Cliente[]>(STORAGE_KEYS.CLIENTES, []),
       loadItem<Agendamento[]>(STORAGE_KEYS.AGENDAMENTOS, []),
@@ -49,11 +52,12 @@ export async function collectSnapshot(): Promise<BackupSnapshot> {
       loadItem<Servico[]>(STORAGE_KEYS.SERVICOS, []),
       loadItem<Pacote[]>(STORAGE_KEYS.PACOTES, []),
       loadItem<PacoteVendido[]>(STORAGE_KEYS.PACOTES_VENDIDOS, []),
+      loadItem<Produto[]>(STORAGE_KEYS.PRODUTOS, []),
     ]);
   return {
     versao: BACKUP_VERSION,
     exportadoEm: new Date().toISOString(),
-    dados: { clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos },
+    dados: { clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos },
   };
 }
 

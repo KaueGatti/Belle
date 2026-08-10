@@ -14,10 +14,10 @@ export default function ClientePacotesScreen({ route, navigation }) {
   const { clienteId } = route.params || {};
   const {
     getCliente,
-    getPacote,
     servicos,
     pacotesVendidos,
     totalQtdVenda,
+    nomePacoteVenda,
     pacoteVendaUsadoCount,
     deletePacoteVenda,
   } = useData();
@@ -75,7 +75,6 @@ export default function ClientePacotesScreen({ route, navigation }) {
           />
         }
         renderItem={({ item: venda }) => {
-          const pacote = getPacote(venda.pacoteId);
           const restante = totalQtdVenda(venda);
           const ativo = restante > 0;
           const usadoCount = pacoteVendaUsadoCount(venda.id);
@@ -83,7 +82,7 @@ export default function ClientePacotesScreen({ route, navigation }) {
           function excluirVenda() {
             Alert.alert(
               'Excluir pacote',
-              `Deseja excluir o pacote "${pacote?.nome || 'Pacote'}" vendido para ${cliente.nome}? Esta ação não pode ser desfeita.`,
+              `Deseja excluir o pacote "${nomePacoteVenda(venda)}" vendido para ${cliente.nome}? A conta a receber vinculada também será removida. Esta ação não pode ser desfeita.`,
               [
                 { text: 'Cancelar', style: 'cancel' },
                 {
@@ -101,7 +100,7 @@ export default function ClientePacotesScreen({ route, navigation }) {
             <Card style={styles.card}>
               <View style={styles.cardHeader}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.nome}>{pacote?.nome || 'Pacote removido'}</Text>
+                  <Text style={styles.nome}>{nomePacoteVenda(venda)}</Text>
                   <Text style={styles.meta}>Vendido em {formatDateBR(venda.vendidoEm)}</Text>
                 </View>
                 <View style={[styles.badge, ativo ? styles.badgeAtivo : styles.badgeEsgotado]}>

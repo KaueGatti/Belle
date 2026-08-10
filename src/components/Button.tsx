@@ -1,9 +1,21 @@
-import React, { useRef } from 'react';
-import { Animated, TouchableOpacity, Text, StyleSheet, ActivityIndicator, View } from 'react-native';
+import React, { useRef, type ReactNode } from 'react';
+import { Animated, TouchableOpacity, Text, StyleSheet, ActivityIndicator, View, type StyleProp, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, radius, spacing } from '../theme/colors';
 
-const VARIANTS = {
+type ButtonVariant = 'primary' | 'outline' | 'danger' | 'ghost';
+
+interface ButtonProps {
+  title: string;
+  onPress?: () => void;
+  variant?: ButtonVariant;
+  disabled?: boolean;
+  loading?: boolean;
+  icon?: ReactNode;
+  style?: StyleProp<ViewStyle>;
+}
+
+const VARIANTS: Record<ButtonVariant, { fg: string; border: string; bg?: string; gradient?: [string, string] }> = {
   primary: { fg: colors.textInverse, border: 'transparent', gradient: [colors.primary, colors.primaryDark] },
   outline: { bg: 'transparent', fg: colors.primary, border: colors.primary },
   danger: { bg: colors.danger, fg: colors.textInverse, border: colors.danger },
@@ -18,10 +30,9 @@ export default function Button({
   loading = false,
   icon,
   style,
-}) {
+}: ButtonProps) {
   const v = VARIANTS[variant] || VARIANTS.primary;
   const scale = useRef(new Animated.Value(1)).current;
-  const isGradient = Boolean(v.gradient);
 
   function handlePressIn() {
     Animated.spring(scale, { toValue: 0.96, speed: 40, bounciness: 0, useNativeDriver: true }).start();
@@ -35,7 +46,7 @@ export default function Button({
   ) : (
     <>
       {icon}
-      <Text style={[styles.text, { color: v.fg }, icon && { marginLeft: 6 }]}>{title}</Text>
+      <Text style={[styles.text, { color: v.fg }, Boolean(icon) && { marginLeft: 6 }]}>{title}</Text>
     </>
   );
 
@@ -49,7 +60,7 @@ export default function Button({
         disabled={disabled || loading}
         style={[styles.shadow, (disabled || loading) && { opacity: 0.5 }]}
       >
-        {isGradient ? (
+        {v.gradient ? (
           <LinearGradient
             colors={v.gradient}
             start={{ x: 0, y: 0 }}

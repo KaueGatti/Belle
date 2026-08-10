@@ -1,26 +1,32 @@
-import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
+import React, { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
 import { Animated, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, spacing } from '../theme/colors';
 
-const ToastContext = createContext(null);
+type ToastType = 'success' | 'error' | 'info';
 
-const ICONS = {
+interface ToastContextValue {
+  showToast: (message: string, type?: ToastType) => void;
+}
+
+const ToastContext = createContext<ToastContextValue | null>(null);
+
+const ICONS: Record<ToastType, { icon: keyof typeof Ionicons.glyphMap; color: string; bg: string }> = {
   success: { icon: 'checkmark-circle', color: colors.success, bg: colors.successLight },
   error: { icon: 'alert-circle', color: colors.danger, bg: colors.dangerLight },
   info: { icon: 'information-circle', color: colors.info, bg: colors.infoLight },
 };
 
-export function ToastProvider({ children }) {
+export function ToastProvider({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
-  const [toast, setToast] = useState(null);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-24)).current;
-  const hideTimer = useRef(null);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback(
-    (message, type = 'success') => {
+    (message: string, type: ToastType = 'success') => {
       if (hideTimer.current) clearTimeout(hideTimer.current);
       setToast({ message, type });
       opacity.setValue(0);
@@ -45,10 +51,7 @@ export function ToastProvider({ children }) {
       {toast ? (
         <Animated.View
           pointerEvents="none"
-          style={[
-            styles.wrapper,
-            { top: insets.top + 10, opacity, transform: [{ translateY }] },
-          ]}
+          style={[styles.wrapper, { top: insets.top + 10, opacity, transform: [{ translateY }] }]}
         >
           <Animated.View style={[styles.toast, { backgroundColor: ICONS[toast.type].bg }]}>
             <Ionicons name={ICONS[toast.type].icon} size={20} color={ICONS[toast.type].color} />

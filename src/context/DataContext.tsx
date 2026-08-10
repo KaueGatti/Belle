@@ -15,6 +15,9 @@ import {
   Servico,
   Pacote,
   PacoteVendido,
+  PacoteItem,
+  Produto,
+  ProdutoItem,
   DadosApp,
 } from '../types/entities';
 
@@ -24,6 +27,7 @@ type ContaInput = Partial<Omit<Conta, 'id' | 'createdAt' | 'updatedAt'>>;
 type CentroCustoInput = Partial<Omit<CentroCusto, 'id' | 'createdAt' | 'updatedAt'>>;
 type ServicoInput = Partial<Omit<Servico, 'id' | 'createdAt' | 'updatedAt'>>;
 type PacoteInput = Partial<Omit<Pacote, 'id' | 'createdAt' | 'updatedAt'>>;
+type ProdutoInput = Partial<Omit<Produto, 'id' | 'createdAt' | 'updatedAt'>>;
 
 const DataContext = createContext<DataContextValue | null>(null);
 
@@ -44,13 +48,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [pacotesVendidos, setPacotesVendidos] = useState<PacoteVendido[]>([]);
+  const [produtos, setProdutos] = useState<Produto[]>([]);
 
   const hasLoaded = useRef(false);
 
   // Carrega dados persistidos na inicialização
   useEffect(() => {
     (async () => {
-      const [c, a, f, cc, seeded, sv, pc, pv] = await Promise.all([
+      const [c, a, f, cc, seeded, sv, pc, pv, pr] = await Promise.all([
         loadItem<Cliente[]>(STORAGE_KEYS.CLIENTES, []),
         loadItem<Agendamento[]>(STORAGE_KEYS.AGENDAMENTOS, []),
         loadItem<Conta[]>(STORAGE_KEYS.CONTAS, []),
@@ -59,6 +64,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         loadItem<Servico[]>(STORAGE_KEYS.SERVICOS, []),
         loadItem<Pacote[]>(STORAGE_KEYS.PACOTES, []),
         loadItem<PacoteVendido[]>(STORAGE_KEYS.PACOTES_VENDIDOS, []),
+        loadItem<Produto[]>(STORAGE_KEYS.PRODUTOS, []),
       ]);
 
       setClientes(c);
@@ -67,6 +73,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setServicos(sv);
       setPacotes(pc);
       setPacotesVendidos(pv);
+      setProdutos(pr);
 
       if (!seeded && cc.length === 0) {
         setCentrosCusto(CENTROS_PADRAO);
@@ -110,6 +117,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (hasLoaded.current) saveItem(STORAGE_KEYS.PACOTES_VENDIDOS, pacotesVendidos);
   }, [pacotesVendidos]);
 
+  useEffect(() => {
+    if (hasLoaded.current) saveItem(STORAGE_KEYS.PRODUTOS, produtos);
+  }, [produtos]);
+
   // ---------- Clientes ----------
   function addCliente(data: ClienteInput): Cliente {
     const novo = { id: generateId('cli'), createdAt: Date.now(), updatedAt: Date.now(), ...data } as Cliente;
@@ -138,7 +149,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   function deleteAgendamento(id: string) {
     const alvo = agendamentos.find((a) => a.id === id);
     if (alvo?.pacoteVendaId && Array.isArray(alvo.servicos)) {
-      restaurarPacote(alvo.pacoteVendaId, alvo.servicos);
+      restaurarPacote(alvo.pacoteVendaId, alvo.servicos, alvo.servicosQtd);
+    }
+    if (Array.isArray(alvo?.produtos)) {
+      restaurarEstoqueProdutos(alvo.produtos);
     }
     setAgendamentos((prev) => prev.filter((a) => a.id !== id));
     setContas((prev) => prev.filter((c) => c.agendamentoId !== id));
@@ -244,14 +258,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   function servicoUsadoCount(id: string): number {
     return agendamentos.filter((a) => Array.isArray(a.servicos) && a.servicos.includes(id)).length;
   }
-  // Exibe os serviços de um agendamento como "Manicure + Pedicure".
+  // Exibe os serviços de um agendamento como "Manicure x2 + Pedicure".
   // Suporta agendamentos antigos que guardavam um único texto em "servico".
   function formatAgendamentoServicos(agendamento: Agendamento): string {
     if (Array.isArray(agendamento.servicos) && agendamento.servicos.length > 0) {
-      const nomes = agendamento.servicos.map((id) => getServico(id)?.nome).filter(Boolean);
-      return nomes.length ? nomes.join(' + ') : 'Serviço(s) removido(s)';
+      const partes = agendamento.servicos
+        .map((id) => {
+          const nome = getServico(id)?.nome;
+          if (!nome) return null;
+          const qtd = Number(agendamento.servicosQtd?.[id] || 0);
+          return qtd > 1 ? `${nome} x${qtd}` : nome;
+        })
+        .filter(Boolean);
+      return partes.length ? partes.join(' + ') : 'Serviço(s) removido(s)';
     }
     return agendamento.servico || 'Sem serviço';
+  }
+
+  // Resumo dos produtos vendidos em um agendamento: "Esmalte x1 + Lixa x2"
+  function formatAgendamentoProdutos(agendamento: Agendamento): string {
+    const itens = agendamento.produtos || [];
+    if (itens.length === 0) return '';
+    const partes = itens
+      .map((it) => {
+        const nome = getProduto(it.produtoId)?.nome;
+        if (!nome) return null;
+        return Number(it.qtd) > 1 ? `${nome} x${it.qtd}` : nome;
+      })
+      .filter(Boolean);
+    return partes.join(' + ');
   }
 
   // ---------- Pacotes ----------
@@ -279,16 +314,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     valorPago?: number;
     dataRecebimento?: string;
   }
+  function registrarContaPacote(novo: PacoteVendido, clienteId: string, descricao: string, valor: number, dataVenda: string, opcoes: OpcoesVenda) {
+    const cliente = clientes.find((c) => c.id === clienteId);
+    const valorPago = Math.max(0, Number(opcoes.valorPago) || 0);
+    const statusConta: Conta['status'] = valorPago >= valor ? 'quitado' : 'pendente';
+    addConta({
+      tipo: 'receber',
+      descricao: `${descricao} ${cliente?.nome || ''}`.trim(),
+      valor,
+      vencimento: dataVenda,
+      clienteId,
+      pacoteVendaId: novo.id,
+      valorPago,
+      status: statusConta,
+      dataPagamento: valorPago > 0 ? opcoes.dataRecebimento || todayISO() : null,
+    });
+  }
   // opcoes: { dataVenda, valorPago, dataRecebimento }
   function venderPacote(clienteId: string, pacoteId: string, desconto = 0, opcoes: OpcoesVenda = {}): PacoteVendido | null {
     const pacote = getPacote(pacoteId);
     if (!pacote) return null;
-    const cliente = clientes.find((c) => c.id === clienteId);
     const descontoNum = Math.max(0, Number(desconto) || 0);
     const valor = Math.max(0, Number(pacote.valor || 0) - descontoNum);
     const dataVenda = opcoes.dataVenda || todayISO();
-    const valorPago = Math.max(0, Number(opcoes.valorPago) || 0);
-    const statusConta: Conta['status'] = valorPago >= valor ? 'quitado' : 'pendente';
     const novo: PacoteVendido = {
       id: generateId('pv'),
       pacoteId,
@@ -301,28 +349,71 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updatedAt: Date.now(),
     };
     setPacotesVendidos((prev) => [novo, ...prev]);
-    addConta({
-      tipo: 'receber',
-      descricao: `Pacote ${pacote.nome} - ${cliente?.nome || ''}`,
-      valor,
-      vencimento: dataVenda,
+    registrarContaPacote(novo, clienteId, `Pacote ${pacote.nome} -`, valor, dataVenda, opcoes);
+    return novo;
+  }
+  // Venda de pacote personalizado (montado na hora, sem catálogo)
+  function venderPacotePersonalizado(
+    clienteId: string,
+    nome: string,
+    itens: PacoteItem[],
+    desconto = 0,
+    opcoes: OpcoesVenda = {}
+  ): PacoteVendido | null {
+    if (!nome || !Array.isArray(itens) || itens.length === 0) return null;
+    const descontoNum = Math.max(0, Number(desconto) || 0);
+    const valorBase = itens.reduce((acc, s) => {
+      const serv = servicos.find((x) => x.id === s.servicoId);
+      return acc + Number(serv?.preco || 0) * Number(s.qtd || 0);
+    }, 0);
+    const valor = Math.max(0, valorBase - descontoNum);
+    const dataVenda = opcoes.dataVenda || todayISO();
+    const novo: PacoteVendido = {
+      id: generateId('pv'),
+      pacoteId: null,
+      nome,
       clienteId,
-      valorPago,
-      status: statusConta,
-      dataPagamento: valorPago > 0 ? opcoes.dataRecebimento || todayISO() : null,
-    });
+      vendidoEm: dataVenda,
+      valor,
+      desconto: descontoNum,
+      servicos: itens.map((s) => ({ servicoId: s.servicoId, qtd: s.qtd })),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    setPacotesVendidos((prev) => [novo, ...prev]);
+    registrarContaPacote(novo, clienteId, `Pacote ${nome} -`, valor, dataVenda, opcoes);
     return novo;
   }
   function getPacoteVenda(id: string): PacoteVendido | null {
     return pacotesVendidos.find((v) => v.id === id) || null;
   }
+  function nomePacoteVenda(venda: PacoteVendido): string {
+    const cat = venda.pacoteId ? getPacote(venda.pacoteId) : null;
+    return cat?.nome || venda.nome || 'Pacote';
+  }
   // Quantos agendamentos estão vinculados a esta venda de pacote
   function pacoteVendaUsadoCount(id: string): number {
     return agendamentos.filter((a) => a.pacoteVendaId === id).length;
   }
-  // Remove a venda de pacote (apenas quando não há agendamento usando o saldo)
+  // Remove a venda de pacote (apenas quando não há agendamento usando o saldo).
+  // Exclui também a conta a receber vinculada ao pacote.
   function deletePacoteVenda(id: string) {
+    const venda = pacotesVendidos.find((v) => v.id === id);
     setPacotesVendidos((prev) => prev.filter((v) => v.id !== id));
+    setContas((prev) =>
+      prev.filter((c) => {
+        if (c.pacoteVendaId === id) return false;
+        const legacy =
+          venda != null &&
+          c.pacoteVendaId == null &&
+          c.tipo === 'receber' &&
+          c.agendamentoId == null &&
+          c.clienteId === venda.clienteId &&
+          typeof c.descricao === 'string' &&
+          c.descricao.startsWith('Pacote ');
+        return !legacy;
+      })
+    );
   }
   // Vendas de pacote ainda com saldo (serviços disponíveis)
   function pacotesAtivosDoCliente(clienteId: string): PacoteVendido[] {
@@ -333,37 +424,135 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   function totalQtdVenda(venda: PacoteVendido | null | undefined): number {
     return (venda?.servicos || []).reduce((acc, s) => acc + Number(s.qtd || 0), 0);
   }
-  // Debita 1 unidade de cada serviço usado do pacote da cliente
-  function debitarPacote(pacoteVendaId: string, servicoIds: string[]) {
+  // Debita a quantidade usada de cada serviço do pacote da cliente
+  function debitarPacote(pacoteVendaId: string, servicoIds: string[], quantidades?: Record<string, number>) {
     if (!Array.isArray(servicoIds)) return;
     setPacotesVendidos((prev) =>
       prev.map((v) => {
         if (v.id !== pacoteVendaId) return v;
         return {
           ...v,
-          servicos: v.servicos.map((s) =>
-            servicoIds.includes(s.servicoId) && Number(s.qtd) > 0 ? { ...s, qtd: Number(s.qtd) - 1 } : s
-          ),
+          servicos: v.servicos.map((s) => {
+            if (!servicoIds.includes(s.servicoId) || Number(s.qtd) <= 0) return s;
+            const q = Math.max(1, Number(quantidades?.[s.servicoId]) || 1);
+            return { ...s, qtd: Math.max(0, Number(s.qtd) - q) };
+          }),
           updatedAt: Date.now(),
         };
       })
     );
   }
   // Devolve as unidades (usado ao editar/excluir agendamento de pacote)
-  function restaurarPacote(pacoteVendaId: string, servicoIds: string[]) {
+  function restaurarPacote(pacoteVendaId: string, servicoIds: string[], quantidades?: Record<string, number>) {
     if (!Array.isArray(servicoIds)) return;
     setPacotesVendidos((prev) =>
       prev.map((v) => {
         if (v.id !== pacoteVendaId) return v;
         return {
           ...v,
-          servicos: v.servicos.map((s) =>
-            servicoIds.includes(s.servicoId) ? { ...s, qtd: Number(s.qtd) + 1 } : s
-          ),
+          servicos: v.servicos.map((s) => {
+            if (!servicoIds.includes(s.servicoId)) return s;
+            const q = Math.max(1, Number(quantidades?.[s.servicoId]) || 1);
+            return { ...s, qtd: Number(s.qtd) + q };
+          }),
           updatedAt: Date.now(),
         };
       })
     );
+  }
+
+  // ---------- Produtos ----------
+  function addProduto(data: ProdutoInput): Produto {
+    const novo = { id: generateId('pr'), createdAt: Date.now(), updatedAt: Date.now(), estoque: 0, ...data } as Produto;
+    setProdutos((prev) => [novo, ...prev]);
+    return novo;
+  }
+  function updateProduto(id: string, data: ProdutoInput) {
+    setProdutos((prev) => prev.map((p) => (p.id === id ? { ...p, ...data, updatedAt: Date.now() } : p)));
+  }
+  function deleteProduto(id: string) {
+    setProdutos((prev) => prev.filter((p) => p.id !== id));
+  }
+  function getProduto(id: string): Produto | null {
+    return produtos.find((p) => p.id === id) || null;
+  }
+  function produtoUsadoCount(id: string): number {
+    return agendamentos.filter((a) =>
+      Array.isArray(a.produtos) && a.produtos.some((p) => p.produtoId === id)
+    ).length;
+  }
+  function itemProdutoQuantidade(itens: ProdutoItem[], id: string): number {
+    return (itens || []).find((p) => p.produtoId === id)?.qtd || 0;
+  }
+  // Baixa o estoque ao vender produtos (usa o mínimo entre a qtd solicitada e o estoque)
+  function baixarEstoqueProdutos(itens: ProdutoItem[]) {
+    if (!Array.isArray(itens) || itens.length === 0) return;
+    const totais: Record<string, number> = {};
+    for (const it of itens) totais[it.produtoId] = (totais[it.produtoId] || 0) + Number(it.qtd || 0);
+    setProdutos((prev) =>
+      prev.map((p) => {
+        const q = totais[p.id];
+        if (!q) return p;
+        return { ...p, estoque: Math.max(0, Number(p.estoque || 0) - q), updatedAt: Date.now() };
+      })
+    );
+  }
+  // Devolve o estoque (ao editar/excluir agendamento ou venda)
+  function restaurarEstoqueProdutos(itens: ProdutoItem[]) {
+    if (!Array.isArray(itens) || itens.length === 0) return;
+    const totais: Record<string, number> = {};
+    for (const it of itens) totais[it.produtoId] = (totais[it.produtoId] || 0) + Number(it.qtd || 0);
+    setProdutos((prev) =>
+      prev.map((p) => {
+        const q = totais[p.id];
+        if (!q) return p;
+        return { ...p, estoque: Number(p.estoque || 0) + q, updatedAt: Date.now() };
+      })
+    );
+  }
+  // Centro de custo padrão para receitas de serviços/produtos
+  function centroReceitaPadrao(): CentroCusto | null {
+    return (
+      centrosCusto.find((c) => c.nome.toLowerCase().includes('serviç')) ||
+      centrosCusto.find((c) => c.tipo === 'receita') ||
+      centrosCusto[0] ||
+      null
+    );
+  }
+  // Venda de produtos para uma cliente: baixa estoque + gera conta a receber
+  function venderProduto(clienteId: string, itens: ProdutoItem[], opcoes: OpcoesVenda = {}): boolean {
+    if (!clienteId || !Array.isArray(itens) || itens.length === 0) return false;
+    const cliente = clientes.find((c) => c.id === clienteId);
+    const totais: Record<string, number> = {};
+    for (const it of itens) totais[it.produtoId] = (totais[it.produtoId] || 0) + Number(it.qtd || 0);
+    const valor = Object.entries(totais).reduce((acc, [id, qtd]) => {
+      const p = produtos.find((x) => x.id === id);
+      return acc + Number(p?.preco || 0) * qtd;
+    }, 0);
+    if (valor <= 0) return false;
+    const dataVenda = opcoes.dataVenda || todayISO();
+    const valorPago = Math.max(0, Number(opcoes.valorPago) || 0);
+    const statusConta: Conta['status'] = valorPago >= valor ? 'quitado' : 'pendente';
+    const descricao = itens
+      .map((it) => {
+        const p = produtos.find((x) => x.id === it.produtoId);
+        const nome = p?.nome || 'Produto';
+        return Number(it.qtd) > 1 ? `${nome} x${it.qtd}` : nome;
+      })
+      .join(' + ');
+    addConta({
+      tipo: 'receber',
+      descricao: `${descricao} - ${cliente?.nome || ''}`,
+      valor,
+      vencimento: dataVenda,
+      centroCustoId: centroReceitaPadrao()?.id || null,
+      clienteId,
+      valorPago,
+      status: statusConta,
+      dataPagamento: valorPago > 0 ? opcoes.dataRecebimento || todayISO() : null,
+    });
+    baixarEstoqueProdutos(itens);
+    return true;
   }
 
   // Substitui todos os dados de uma vez (usado no import de backup e no sync)
@@ -376,6 +565,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setServicos(Array.isArray(dados?.servicos) ? dados.servicos : fallback);
     setPacotes(Array.isArray(dados?.pacotes) ? dados.pacotes : fallback);
     setPacotesVendidos(Array.isArray(dados?.pacotesVendidos) ? dados.pacotesVendidos : fallback);
+    setProdutos(Array.isArray(dados?.produtos) ? dados.produtos : fallback);
   }
 
   const value: DataContextValue = {
@@ -387,6 +577,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     servicos,
     pacotes,
     pacotesVendidos,
+    produtos,
     restoreSnapshot,
     addCliente,
     updateCliente,
@@ -407,25 +598,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteCentroCusto,
     getCentroCusto,
     contaCountForCentro,
+    centroReceitaPadrao,
     addServico,
     updateServico,
     deleteServico,
     getServico,
     servicoUsadoCount,
     formatAgendamentoServicos,
+    formatAgendamentoProdutos,
     addPacote,
     updatePacote,
     deletePacote,
     getPacote,
     pacoteUsadoCount,
     venderPacote,
+    venderPacotePersonalizado,
     getPacoteVenda,
+    nomePacoteVenda,
     pacotesAtivosDoCliente,
     totalQtdVenda,
     pacoteVendaUsadoCount,
     deletePacoteVenda,
     debitarPacote,
     restaurarPacote,
+    addProduto,
+    updateProduto,
+    deleteProduto,
+    getProduto,
+    produtoUsadoCount,
+    itemProdutoQuantidade,
+    baixarEstoqueProdutos,
+    restaurarEstoqueProdutos,
+    venderProduto,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -440,6 +644,7 @@ export interface DataContextValue {
   servicos: Servico[];
   pacotes: Pacote[];
   pacotesVendidos: PacoteVendido[];
+  produtos: Produto[];
   restoreSnapshot: (dados: Partial<DadosApp> | null | undefined) => void;
   addCliente: (data: ClienteInput) => Cliente;
   updateCliente: (id: string, data: ClienteInput) => void;
@@ -460,25 +665,38 @@ export interface DataContextValue {
   deleteCentroCusto: (id: string) => void;
   getCentroCusto: (id: string) => CentroCusto | null;
   contaCountForCentro: (id: string) => number;
+  centroReceitaPadrao: () => CentroCusto | null;
   addServico: (data: ServicoInput) => Servico;
   updateServico: (id: string, data: ServicoInput) => void;
   deleteServico: (id: string) => void;
   getServico: (id: string) => Servico | null;
   servicoUsadoCount: (id: string) => number;
   formatAgendamentoServicos: (agendamento: Agendamento) => string;
+  formatAgendamentoProdutos: (agendamento: Agendamento) => string;
   addPacote: (data: PacoteInput) => Pacote;
   updatePacote: (id: string, data: PacoteInput) => void;
   deletePacote: (id: string) => void;
   getPacote: (id: string) => Pacote | null;
   pacoteUsadoCount: (id: string) => number;
   venderPacote: (clienteId: string, pacoteId: string, desconto?: number, opcoes?: { dataVenda?: string; valorPago?: number; dataRecebimento?: string }) => PacoteVendido | null;
+  venderPacotePersonalizado: (clienteId: string, nome: string, itens: PacoteItem[], desconto?: number, opcoes?: { dataVenda?: string; valorPago?: number; dataRecebimento?: string }) => PacoteVendido | null;
   getPacoteVenda: (id: string) => PacoteVendido | null;
+  nomePacoteVenda: (venda: PacoteVendido) => string;
   pacotesAtivosDoCliente: (clienteId: string) => PacoteVendido[];
   totalQtdVenda: (venda: PacoteVendido | null | undefined) => number;
   pacoteVendaUsadoCount: (id: string) => number;
   deletePacoteVenda: (id: string) => void;
-  debitarPacote: (pacoteVendaId: string, servicoIds: string[]) => void;
-  restaurarPacote: (pacoteVendaId: string, servicoIds: string[]) => void;
+  debitarPacote: (pacoteVendaId: string, servicoIds: string[], quantidades?: Record<string, number>) => void;
+  restaurarPacote: (pacoteVendaId: string, servicoIds: string[], quantidades?: Record<string, number>) => void;
+  addProduto: (data: ProdutoInput) => Produto;
+  updateProduto: (id: string, data: ProdutoInput) => void;
+  deleteProduto: (id: string) => void;
+  getProduto: (id: string) => Produto | null;
+  produtoUsadoCount: (id: string) => number;
+  itemProdutoQuantidade: (itens: ProdutoItem[], id: string) => number;
+  baixarEstoqueProdutos: (itens: ProdutoItem[]) => void;
+  restaurarEstoqueProdutos: (itens: ProdutoItem[]) => void;
+  venderProduto: (clienteId: string, itens: ProdutoItem[], opcoes?: { dataVenda?: string; valorPago?: number; dataRecebimento?: string }) => boolean;
 }
 
 export function useData(): DataContextValue {
