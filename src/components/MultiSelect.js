@@ -4,6 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../theme/colors';
 import { formatCurrency } from '../utils/format';
 
+/**
+ * @typedef {{ label: string; value: string; price?: number; subtitle?: string; disabled?: boolean }} MultiSelectOption
+ *
+ * @param {{
+ *   options: MultiSelectOption[];
+ *   selected?: string[];
+ *   onToggle: (value: string) => void;
+ *   emptyMessage?: string;
+ * }} props
+ */
 // options: [{ label, value, price?, subtitle?, disabled? }] - seleção múltipla via checkboxes
 export default function MultiSelect({ options, selected = [], onToggle, emptyMessage }) {
   if (options.length === 0) {

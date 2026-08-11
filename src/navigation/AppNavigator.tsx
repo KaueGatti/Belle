@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Platform } from 'react-native';
-import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { NavigationContainer, createNavigationContainerRef, CommonActions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -34,6 +34,26 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<StackParamList>();
 const navigationRef = createNavigationContainerRef<TabParamList>();
 
+// Tela-raiz de cada aba (destino do botão "Sair" global)
+const TAB_ROOT_SCREEN: Partial<Record<keyof TabParamList, keyof StackParamList>> = {
+  DashboardTab: 'Dashboard',
+  AgendaTab: 'Agenda',
+  ClientesTab: 'Clientes',
+  FinanceiroTab: 'Financeiro',
+};
+
+function sairDaTela() {
+  if (!navigationRef.isReady()) return;
+  const rootState = navigationRef.getRootState();
+  const route = rootState?.routes?.[rootState?.index ?? -1];
+  if (!route) return;
+  const tabName = route.name as keyof TabParamList;
+  const rootScreen = TAB_ROOT_SCREEN[tabName];
+  if (rootScreen) {
+    navigationRef.dispatch(CommonActions.navigate({ name: tabName, params: { screen: rootScreen } }));
+  }
+}
+
 function useStackScreenOptions(): NativeStackNavigationOptions {
   return {
     headerStyle: { backgroundColor: colors.surface },
@@ -42,10 +62,15 @@ function useStackScreenOptions(): NativeStackNavigationOptions {
     headerShadowVisible: false,
     ...(Platform.OS === 'android' ? { statusBarTranslucent: true } : {}),
     contentStyle: { backgroundColor: colors.background },
+    headerRight: () => (
+      <TouchableOpacity onPress={sairDaTela} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '700' }}>Sair</Text>
+      </TouchableOpacity>
+    ),
   };
 }
 
-function HomeSpeedDial() {
+function HomeSpeedDial({ bottomOffset = 0 }: { bottomOffset?: number }) {
   const actions: SpeedDialAction[] = [
     {
       key: 'novo-agendamento',
@@ -60,6 +85,12 @@ function HomeSpeedDial() {
       onPress: () => navigationRef.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null } }),
     },
     {
+      key: 'vender-pacote',
+      icon: 'gift',
+      label: 'Vender Pacote',
+      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'VendaPacote', params: { clienteId: null } }),
+    },
+    {
       key: 'servicos',
       icon: 'cut',
       label: 'Serviços & Pacotes',
@@ -72,45 +103,36 @@ function HomeSpeedDial() {
       onPress: () => navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'produtos' } }),
     },
     {
-      key: 'categorias',
-      icon: 'pricetags',
-      label: 'Categorias',
-      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'CentroCusto' }),
-    },
-    {
-      key: 'vender-pacote',
-      icon: 'gift',
-      label: 'Vender Pacote',
-      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'VendaPacote', params: { clienteId: null } }),
-    },
-    {
       key: 'nova-conta',
       icon: 'wallet',
       label: 'Nova Conta',
       onPress: () => navigationRef.navigate('FinanceiroTab', { screen: 'ContaForm', params: { contaId: null } }),
     },
+    {
+      key: 'categorias',
+      icon: 'pricetags',
+      label: 'Categorias',
+      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'CentroCusto' }),
+    },
   ];
 
-  return <SpeedDial actions={actions} />;
+  return <SpeedDial actions={actions} bottomOffset={bottomOffset} />;
 }
 
 function DashboardStack() {
   const stackScreenOptions = useStackScreenOptions();
   return (
-    <View style={{ flex: 1 }}>
-      <Stack.Navigator screenOptions={stackScreenOptions}>
-        <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Início' }} />
-        <Stack.Screen name="Configuracoes" component={SettingsScreen} options={{ title: 'Configurações' }} />
-        <Stack.Screen name="Servicos" component={ServicosScreen} options={{ title: 'Serviços & Pacotes' }} />
-        <Stack.Screen name="ServicoForm" component={ServicoFormScreen} />
-        <Stack.Screen name="PacoteForm" component={PacoteFormScreen} />
-        <Stack.Screen name="ProdutoForm" component={ProdutoFormScreen} />
-        <Stack.Screen name="VendaProduto" component={VendaProdutoScreen} options={{ title: 'Vender Produtos' }} />
-        <Stack.Screen name="CentroCusto" component={CentroCustoScreen} options={{ title: 'Centro de Custo' }} />
-        <Stack.Screen name="CentroCustoForm" component={CentroCustoFormScreen} />
-      </Stack.Navigator>
-      <HomeSpeedDial />
-    </View>
+    <Stack.Navigator screenOptions={stackScreenOptions}>
+      <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Início', headerRight: () => null }} />
+      <Stack.Screen name="Configuracoes" component={SettingsScreen} options={{ title: 'Configurações' }} />
+      <Stack.Screen name="Servicos" component={ServicosScreen} options={{ title: 'Serviços & Pacotes' }} />
+      <Stack.Screen name="ServicoForm" component={ServicoFormScreen} />
+      <Stack.Screen name="PacoteForm" component={PacoteFormScreen} />
+      <Stack.Screen name="ProdutoForm" component={ProdutoFormScreen} />
+      <Stack.Screen name="VendaProduto" component={VendaProdutoScreen} options={{ title: 'Vender Produtos' }} />
+      <Stack.Screen name="CentroCusto" component={CentroCustoScreen} options={{ title: 'Centro de Custo' }} />
+      <Stack.Screen name="CentroCustoForm" component={CentroCustoFormScreen} />
+    </Stack.Navigator>
   );
 }
 
@@ -118,7 +140,7 @@ function AgendaStack() {
   const stackScreenOptions = useStackScreenOptions();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Agenda" component={AgendaScreen} options={{ title: 'Agenda' }} />
+      <Stack.Screen name="Agenda" component={AgendaScreen} options={{ title: 'Agenda', headerRight: () => null }} />
       <Stack.Screen name="AgendamentoForm" component={AgendamentoFormScreen} />
     </Stack.Navigator>
   );
@@ -128,7 +150,7 @@ function ClientesStack() {
   const stackScreenOptions = useStackScreenOptions();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Clientes" component={ClientesScreen} options={{ title: 'Clientes' }} />
+      <Stack.Screen name="Clientes" component={ClientesScreen} options={{ title: 'Clientes', headerRight: () => null }} />
       <Stack.Screen name="ClienteConsulta" component={ClienteConsultaScreen} options={{ title: 'Cliente' }} />
       <Stack.Screen name="ClienteForm" component={ClienteFormScreen} />
       <Stack.Screen name="ClienteHistorico" component={ClienteHistoricoScreen} />
@@ -142,7 +164,7 @@ function FinanceiroStack() {
   const stackScreenOptions = useStackScreenOptions();
   return (
     <Stack.Navigator screenOptions={stackScreenOptions}>
-      <Stack.Screen name="Financeiro" component={FinanceiroScreen} options={{ title: 'Financeiro' }} />
+      <Stack.Screen name="Financeiro" component={FinanceiroScreen} options={{ title: 'Financeiro', headerRight: () => null }} />
       <Stack.Screen name="ContaForm" component={ContaFormScreen} />
     </Stack.Navigator>
   );
@@ -157,36 +179,40 @@ const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
 
 export default function AppNavigator() {
   const insets = useSafeAreaInsets();
+  const tabBarHeight = 62 + insets.bottom;
 
   return (
     <NavigationContainer ref={navigationRef}>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarActiveTintColor: colors.primary,
-          tabBarInactiveTintColor: colors.textSecondary,
-          tabBarStyle: {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.border,
-            height: 62 + insets.bottom,
-            paddingBottom: 8 + insets.bottom,
-            paddingTop: 6,
-          },
-          tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={`${ICONS[route.name]}${focused ? '' : '-outline'}` as keyof typeof Ionicons.glyphMap}
-              size={size - 2}
-              color={color}
-            />
-          ),
-        })}
-      >
-        <Tab.Screen name="DashboardTab" component={DashboardStack} options={{ title: 'Início' }} />
-        <Tab.Screen name="AgendaTab" component={AgendaStack} options={{ title: 'Agenda' }} />
-        <Tab.Screen name="ClientesTab" component={ClientesStack} options={{ title: 'Clientes' }} />
-        <Tab.Screen name="FinanceiroTab" component={FinanceiroStack} options={{ title: 'Financeiro' }} />
-      </Tab.Navigator>
+      <View style={{ flex: 1 }}>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.textSecondary,
+            tabBarStyle: {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              height: tabBarHeight,
+              paddingBottom: 8 + insets.bottom,
+              paddingTop: 6,
+            },
+            tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+            tabBarIcon: ({ color, size, focused }) => (
+              <Ionicons
+                name={`${ICONS[route.name]}${focused ? '' : '-outline'}` as keyof typeof Ionicons.glyphMap}
+                size={size - 2}
+                color={color}
+              />
+            ),
+          })}
+        >
+          <Tab.Screen name="DashboardTab" component={DashboardStack} options={{ title: 'Início' }} />
+          <Tab.Screen name="AgendaTab" component={AgendaStack} options={{ title: 'Agenda' }} />
+          <Tab.Screen name="ClientesTab" component={ClientesStack} options={{ title: 'Clientes' }} />
+          <Tab.Screen name="FinanceiroTab" component={FinanceiroStack} options={{ title: 'Financeiro' }} />
+        </Tab.Navigator>
+        <HomeSpeedDial bottomOffset={tabBarHeight} />
+      </View>
     </NavigationContainer>
   );
 }

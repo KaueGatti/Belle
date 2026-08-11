@@ -6,6 +6,19 @@ import { colors, radius, spacing } from '../theme/colors';
 
 // Select que abre um modal com checkboxes para seleção múltipla.
 // options: [{ label, value, price? }] | selected: [] | onToggle(id)
+/**
+ * @typedef {{ label: string; value: string; price?: number; subtitle?: string; disabled?: boolean }} MultiSelectOpt
+ *
+ * @param {{
+ *   label?: string;
+ *   options: MultiSelectOpt[];
+ *   selected?: string[];
+ *   onToggle: (value: string) => void;
+ *   placeholder?: string;
+ *   required?: boolean;
+ *   emptyMessage?: string;
+ * }} props
+ */
 export default function MultiSelectField({
   label,
   options,

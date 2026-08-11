@@ -42,6 +42,22 @@ export function maskCurrencyInput(text: string): string {
   return formatCurrency(cents / 100);
 }
 
+// Máscara de moeda decimal livre: "10" -> "R$ 10,00", "10,00" -> "R$ 10,00".
+// Diferente de maskCurrencyInput (baseada em centavos), os dígitos inteiros são reais
+// e os centavos vêm após o separador (vírgula ou ponto). Máximo 2 casas decimais.
+export function maskCurrencyDec(text: string): string {
+  const t = (text || '').replace(/[^\d,.]/g, '');
+  const lastComma = t.lastIndexOf(',');
+  const lastDot = t.lastIndexOf('.');
+  const sep = Math.max(lastComma, lastDot);
+  const intDigits = (sep === -1 ? t : t.slice(0, sep)).replace(/\D/g, '');
+  const decDigits = sep === -1 ? '' : t.slice(sep + 1).replace(/\D/g, '');
+  if (!intDigits && !decDigits) return '';
+  const reais = parseInt(intDigits || '0', 10);
+  const cent = parseInt((decDigits.slice(0, 2) + '00').slice(0, 2) || '0', 10);
+  return formatCurrency(reais + cent / 100);
+}
+
 // Máscara de porcentagem (0 a 100): "12" -> "12%"
 export function maskPercent(text: string): string {
   const digits = (text || '').replace(/\D/g, '').slice(0, 3);

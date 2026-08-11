@@ -9,7 +9,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import DateField from '../components/DateField';
 import EmptyState from '../components/EmptyState';
-import StepperList from '../components/StepperList';
+import CheckboxStepper from '../components/CheckboxStepper';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
 import { colors, spacing } from '../theme/colors';
@@ -143,10 +143,17 @@ export default function VendaProdutoScreen({ route, navigation }: Props) {
           </Card>
         )}
 
-        <Text style={styles.label}>Produtos</Text>
-        <StepperList
+        <CheckboxStepper
+          label="Produtos"
           options={listaProdutos}
           emptyMessage={produtos.length === 0 ? 'Nenhum produto cadastrado' : 'Sem produtos disponíveis'}
+          onToggle={(value) => {
+            const p = produtos.find((x) => x.id === value);
+            const max = Math.max(0, Number(p?.estoque || 0));
+            const ativo = Number(qtds[value] || 0) > 0;
+            setQtds((prev) => ({ ...prev, [value]: ativo ? 0 : Math.min(1, max) }));
+            if (!ativo) setErroItens('');
+          }}
           onIncrement={(value) => {
             const p = produtos.find((x) => x.id === value);
             const max = Math.max(0, Number(p?.estoque || 0));

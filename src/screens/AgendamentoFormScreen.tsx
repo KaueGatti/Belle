@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, ScrollView, Alert, TouchableOpacity, Switch, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,7 +11,7 @@ import SegmentedControl from '../components/SegmentedControl';
 import DateField from '../components/DateField';
 import TimeField from '../components/TimeField';
 import EmptyState from '../components/EmptyState';
-import StepperList from '../components/StepperList';
+import CheckboxStepper from '../components/CheckboxStepper';
 import AppModal from '../components/AppModal';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
@@ -85,6 +85,12 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   const [adicionalTexto, setAdicionalTexto] = useState(
     existente?.adicional != null && Number(existente.adicional) > 0 ? maskCurrency(existente.adicional) : ''
   );
+  const adicionalMask = useRef<{ int: string; dec: string; sep: boolean; seeded: boolean }>({
+    int: '',
+    dec: '',
+    sep: false,
+    seeded: false,
+  });
   const [valorTexto, setValorTexto] = useState(existente?.valor != null ? maskCurrency(existente.valor) : '');
   const [valorEditado, setValorEditado] = useState(existente?.valor != null);
   const [sinalTexto, setSinalTexto] = useState(
@@ -94,7 +100,6 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   const [pacoteVendaId, setPacoteVendaId] = useState(existente?.pacoteVendaId || null);
   const [status, setStatus] = useState(existente?.status || 'agendado');
   const [observacoes, setObservacoes] = useState(existente?.observacoes || '');
-  const [gerarConta, setGerarConta] = useState(true);
   const [sorteio, setSorteio] = useState(Boolean(existente?.sorteio));
   const [duracao, setDuracao] = useState(existente?.duracao != null ? String(existente.duracao) : '');
   const [duracaoEditado, setDuracaoEditado] = useState(Boolean(existente));
@@ -108,11 +113,19 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   const [conflitoModal, setConflitoModal] = useState<Agendamento | null>(null);
   const [confirmarConta, setConfirmarConta] = useState(false);
 
+  function sairDoForm() {
+    if (navigation.canGoBack()) {
+      navigation.popToTop();
+    } else {
+      tabNavigation?.navigate('AgendaTab', { screen: 'Agenda' });
+    }
+  }
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: existente ? 'Editar Agendamento' : 'Novo Agendamento',
       headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.popToTop()} activeOpacity={0.7}>
+        <TouchableOpacity onPress={sairDoForm} activeOpacity={0.7}>
           <Text style={styles.sairBtn}>Sair</Text>
         </TouchableOpacity>
       ),
@@ -190,6 +203,63 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   function atualizarValorAuto() {
     if (!valorEditado) setValorTexto(maskCurrency(valorAuto()));
   }
+
+  // Máscara do campo "Adicional" com estado: cada dígito na parte inteira evolui
+  // (2 → 20 → 200); a vírgula inicia os centavos (limita a 2 dígitos).
+  function handleAdicionalChange(next: string) {
+    const prev = adicionalTexto;
+    const raw = adicionalMask.current;
+    if (!raw.seeded) {
+      const inicial = parseCurrencyInput(prev);
+      if (inicial > 0) {
+        const reais = Math.trunc(inicial);
+        const cent = Math.round((inicial - reais) * 100);
+        raw.int = String(reais);
+        raw.dec = cent > 0 ? String(cent).padStart(2, '0') : '';
+      }
+      raw.seeded = true;
+    }
+    let { int, dec, sep } = raw;
+    if (next.length > prev.length && next.startsWith(prev)) {
+      const ch = next[next.length - 1];
+      if (/[0-9]/.test(ch)) {
+        if (sep) {
+          if (dec.length < 2) dec += ch;
+        } else {
+          int += ch;
+        }
+      } else if ((ch === ',' || ch === '.') && !sep) {
+        sep = true;
+      }
+    } else if (next.length < prev.length && prev.startsWith(next)) {
+      if (sep && dec.length > 0) dec = dec.slice(0, -1);
+      else if (sep) sep = false;
+      else int = int.slice(0, -1);
+    } else {
+      const valor = parseCurrencyInput(next);
+      const reais = valor > 0 ? Math.trunc(valor) : 0;
+      const cent = valor > 0 ? Math.round((valor - reais) * 100) : 0;
+      int = valor > 0 ? String(reais) : '';
+      dec = cent > 0 ? String(cent).padStart(2, '0') : '';
+      sep = /[,.]/.test(next);
+    }
+    raw.int = int;
+    raw.dec = dec;
+    raw.sep = sep;
+    if (int.length === 0 && dec.length === 0 && !sep) {
+      setAdicionalTexto('');
+    } else {
+      const valorFinal = parseInt(int || '0', 10) + (dec ? parseInt(dec.padEnd(2, '0'), 10) : 0) / 100;
+      setAdicionalTexto(maskCurrency(valorFinal));
+    }
+    atualizarValorAuto();
+  }
+
+  // Mantém o Valor sempre calculado (serviços×qtd + produtos×qtd + adicional),
+  // exceto quando o usuário edita manualmente o campo.
+  useEffect(() => {
+    if (!valorEditado) setValorTexto(maskCurrency(valorAuto()));
+  }, [qtdsService, qtdsProduto, adicionalNum, valorEditado, usarPacote]);
 
   function opcoesServicos() {
     return servicos
@@ -305,6 +375,30 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   }
   function decrementProduto(id: string) {
     setQtdsProduto((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] || 0) - 1) }));
+    atualizarValorAuto();
+  }
+  function toggleService(id: string) {
+    const ativo = Number(qtdsService[id] || 0) > 0;
+    setQtdsService((prev) => ({ ...prev, [id]: ativo ? 0 : 1 }));
+    setErros((p) => ({ ...p, servicos: undefined }));
+    if (ativo) {
+      if (!duracaoEditado) {
+        const novosIds = Object.entries({ ...qtdsService, [id]: 0 })
+          .filter(([, q]) => Number(q) > 0)
+          .map(([k]) => k);
+        const soma = novosIds.reduce((acc, k) => {
+          const s = servicos.find((x) => x.id === k);
+          return acc + Number(s?.duracao || 0) * Number(qtdsService[k] || 0);
+        }, 0);
+        setDuracao(soma > 0 ? String(soma) : '');
+      }
+    } else if (!duracaoEditado) {
+      setDuracao(String(Number(duracaoSugerida) + Number(servicos.find((s) => s.id === id)?.duracao || 0)));
+    }
+    atualizarValorAuto();
+  }
+  function toggleProduto(id: string) {
+    setQtdsProduto((prev) => ({ ...prev, [id]: Number(prev[id] || 0) > 0 ? 0 : 1 }));
     atualizarValorAuto();
   }
 
@@ -434,17 +528,13 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
       if (c) setConflitoModal(c);
       return;
     }
-    const { valor, sinalNum } = prepararDados();
-    const vaiCriarConta =
-      !existente &&
-      !sorteio &&
-      valor > 0 &&
-      (usarPacote ? true : gerarConta || sinalNum > 0);
+    const { valor } = prepararDados();
+    const vaiCriarConta = !existente && !sorteio && valor > 0;
     if (vaiCriarConta) {
       setConfirmarConta(true);
       return;
     }
-    finalizarSalvar(gerarConta && !usarPacote);
+    finalizarSalvar(true);
   }
 
   function finalizarSalvar(gerarContaFinal: boolean) {
@@ -532,8 +622,6 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
           status: cc.status,
           dataPagamento: cc.dataPagamento,
         });
-      } else if (!gerarContaFinal && valorFinal > 0 && !sorteio && (sinalFinal > 0)) {
-        // Sinal registrado mesmo sem conta? Não: sem conta não há onde registrar sinal.
       }
     }
     showToast(existente ? 'Agendamento atualizado' : 'Agendamento realizado');
@@ -716,10 +804,11 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
 
             {vendaSelecionada ? (
               <>
-                <Text style={styles.label}>Serviços do pacote</Text>
-                <StepperList
+                <CheckboxStepper
+                  label="Serviços do pacote"
                   options={opcoesPacoteServicos()}
                   emptyMessage="Sem serviços no pacote"
+                  onToggle={toggleService}
                   onIncrement={incrementService}
                   onDecrement={decrementService}
                 />
@@ -749,10 +838,11 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
           </>
         ) : (
           <>
-            <Text style={styles.label}>Serviços</Text>
-            <StepperList
+            <CheckboxStepper
+              label="Serviços"
               options={opcoesServicos()}
               emptyMessage="Nenhum serviço disponível"
+              onToggle={toggleService}
               onIncrement={incrementService}
               onDecrement={decrementService}
             />
@@ -768,9 +858,11 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
           <Ionicons name="bag-handle-outline" size={18} color={colors.primary} />
           <Text style={styles.adicionalTitle}>Adicionais (produtos vendidos)</Text>
         </View>
-        <StepperList
+        <CheckboxStepper
+          placeholder="Selecionar produtos"
           options={opcoesProdutos()}
           emptyMessage={produtos.length === 0 ? 'Nenhum produto cadastrado' : 'Sem produtos com estoque'}
+          onToggle={toggleProduto}
           onIncrement={incrementProduto}
           onDecrement={decrementProduto}
         />
@@ -778,18 +870,6 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
         {somaProdutos > 0 ? (
           <Text style={styles.somaText}>Produtos: {formatCurrency(somaProdutos)}</Text>
         ) : null}
-
-        <Input
-          label="Adicional (valor extra)"
-          value={adicionalTexto}
-          onChangeText={(t) => {
-            setAdicionalTexto(maskCurrencyInput(t));
-            atualizarValorAuto();
-          }}
-          placeholder="R$ 0,00"
-          keyboardType="decimal-pad"
-          style={{ marginTop: spacing.sm }}
-        />
 
         {usarPacote ? (
           <Text style={styles.avisoConta}>
@@ -816,6 +896,15 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
                 <Text style={styles.recalcular}>Usar soma total ({formatCurrency(totalSugerido)})</Text>
               </TouchableOpacity>
             ) : null}
+
+            <Input
+              label="Adicional (valor extra)"
+              value={adicionalTexto}
+              onChangeText={handleAdicionalChange}
+              placeholder="R$ 0,00"
+              keyboardType="decimal-pad"
+              style={{ marginTop: spacing.sm }}
+            />
 
             <Input
               label="Sinal (valor recebido antecipado)"
@@ -921,20 +1010,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
           style={{ marginTop: spacing.md }}
         />
 
-        {!existente && !sorteio ? (
-          <TouchableOpacity style={styles.switchRow} onPress={() => setGerarConta((v) => !v)} activeOpacity={0.8}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.switchTitle}>Gerar conta a receber</Text>
-              <Text style={styles.switchSubtitle}>Cria automaticamente uma conta no Financeiro vinculada</Text>
-            </View>
-            <Switch
-              value={gerarConta}
-              onValueChange={setGerarConta}
-              trackColor={{ false: colors.border, true: colors.primaryLight }}
-              thumbColor={gerarConta ? colors.primary : '#fff'}
-            />
-          </TouchableOpacity>
-        ) : !usarPacote && contaVinculada ? (
+        {contaVinculada ? (
           <Text style={styles.avisoConta}>
             Este agendamento possui uma conta a receber vinculada no Financeiro.
           </Text>
@@ -967,7 +1043,7 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
     fontWeight: '600',
     fontSize: 13,
-    marginTop: -4,
+    marginTop: 10,
     marginBottom: spacing.sm,
   },
   recalcularWrap: { alignItems: 'center', marginTop: -8, marginBottom: spacing.md },

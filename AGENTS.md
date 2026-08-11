@@ -132,13 +132,24 @@ Persistência: cada estado tem `useEffect` que grava no AsyncStorage somente ap�
 
 - **4 abas** (Bottom Tabs): **Início (DashboardTab)**, **Agenda (AgendaTab)**, **Clientes**, **Financeiro**.
   (As abas **Serviços** e **Centro de Custo/Categorias** foram removidas; o acesso é pelo **FAB em leque**
-  `SpeedDial`, sobreposto ao Início.)
+  `SpeedDial`, **disponível em todas as telas**, flutuando sobre a tab bar.)
 - Cada aba é uma `Stack`. No **stack do Início** ficam: `Dashboard`, `Configuracoes`, `Servicos` (toggle
   Serviços/Pacotes/Produtos), `ServicoForm`, `PacoteForm`, `ProdutoForm`, `VendaProduto`, `CentroCusto`,
   `CentroCustoForm`. No stack de **Clientes**: `ClienteConsulta/Form/Historico/Pacotes` + `VendaPacote`.
-- **SpeedDial** (`src/components/SpeedDial.tsx`): FAB em leque com gradiente `primary→accent`; ações
-  Novo Agendamento, Cadastrar Cliente, Serviços & Pacotes, Produtos, Categorias, Vender Pacote e Nova Conta
-  (navegação cruzada via `createNavigationContainerRef<TabParamList>()`).
+- **SpeedDial** (`src/components/SpeedDial.tsx`): FAB em leque com gradiente `primary→accent`; **montado
+  globalmente** no `AppNavigator` (após o `Tab.Navigator`, `bottomOffset` = altura da tab bar). Painel em
+  `ScrollView` (maxHeight 70%) renderiza as ações **em ordem inversa** (`Novo Agendamento` fica na base,
+  perto do FAB); área de clique = só o ícone+texto (`alignSelf: 'flex-start'`). Ações: Novo Agendamento,
+  Cadastrar Cliente, Vender Pacote, Serviços & Pacotes, Produtos, Nova Conta e Categorias (navegação
+  cruzada via `createNavigationContainerRef<TabParamList>()`).
+- **Botão "Sair" global**: `headerRight` padrão em `useStackScreenOptions()` (`sairDaTela()`).
+  `sairDaTela` **não usa `goBack()`** (o `goBack` no tab navigator cai no `backBehavior: 'firstRoute'`
+  e joga para o Início sem desempilhar a tela); em vez disso ele faz `getRootState()` → rota focada →
+  `CommonActions.navigate` para a **tela-raiz da aba atual** (`TAB_ROOT_SCREEN`: Dashboard/Agenda/Clientes/
+  Financeiro), desempilhando qualquer tela empilhada. Telas-raiz (Dashboard, Agenda, Clientes, Financeiro)
+  sobrescrevem com `headerRight: () => null`. Telas que definem o próprio `headerRight` (ex.: AgendamentoForm,
+  com `sairDoForm` → `popToTop` se `canGoBack`, senão `navigate('AgendaTab', { screen: 'Agenda' })`)
+  sobrescrevem o global.
 - Navegação cruzada entre abas (ex.: telas do stack de Agenda → ClientesTab) via
   `navigation.getParent<BottomTabNavigationProp<TabParamList>>()`.
 - Opções de stack via `useStackScreenOptions()` (header claro, sem sombra, `contentStyle` de fundo).
@@ -318,7 +329,7 @@ Resumo de tudo o que foi feito nesta sessão de estilização visual + feedback 
 
 ---
 
-## Última Sessão (atual)
+## Sessão: Filtro de período + backup no aparelho + detalhe do agendamento
 
 Implementações desta sessão:
 
@@ -346,6 +357,56 @@ Implementações desta sessão:
 
 ## Validação
 - `node --check` em todos os arquivos alterados + `npx expo export --platform android` (bundle OK, 1294 módulos).
+
+---
+
+# Última Sessão (atual) — Ajustes UX (Rodada 1 + Rodada 2) + fixes de navegação
+
+## Rodada 1 — fluxo de seleção/valor/menu (validado; tsc 0, export 1300 módulos)
+- **Novo componente `CheckboxStepper.tsx`**: checklist + stepper de quantidade **apenas nos selecionados**
+  (não lista todos com qtd 0). Usado em AgendamentoForm, VendaPacote e VendaProduto.
+- **`maskCurrencyDec`** em `utils/format.ts` (máscara com 2 casas decimais; **depois substituída pela
+  máscara com estado — ver Rodada 2**).
+- **AgendamentoFormScreen**: Valor automático (`useEffect` soma serviços×qtd + produtos×qtd + adicional)
+  com opção "Usar soma total" quando editado; switch "Gerar conta a receber" **removido** (decisão só no
+  modal de confirmação); Adicional movido para baixo do Valor.
+- **SpeedDial reescrito**: FAB à esquerda (`left:20`, ícone `menu`/`close`), painel em `ScrollView`.
+- **`MultiSelect.js`**: tipado via JSDoc (`MultiSelectOption`).
+
+## Rodada 2 — correções (tsc 0, export OK, fingerprint `5324463898…` inalterado)
+1. **Menu FAB**: ordem **invertida** no `ScrollView` (`[...actions].reverse()` — "Novo Agendamento" na
+   base, perto do FAB); **disponível em todas as telas** (montado globalmente no `AppNavigator` com
+   `bottomOffset = 62 + insets.bottom`, flutuando sobre a tab bar); área de clique **só o ícone+texto**
+   (`alignSelf: 'flex-start'`). Removido `useNavigation` do componente (não é mais usado e agora ele é
+   renderizado fora do `NavigationContainer`).
+2. **Botão "Sair" global**: `headerRight` em `useStackScreenOptions()` via `sairDaTela()`
+   (inicialmente `goBack()`; **depois trocado por navegação para a tela-raiz da aba — ver fixes abaixo**);
+   telas-raiz ocultam com `headerRight: () => null`. AgendamentoForm mantém o próprio Sair, que sobrescreve o global.
+3. **CheckboxStepper → combobox multivalores**: usa **`MultiSelectField`** (gatilho mostra os
+   selecionados, modal com checkboxes reutilizando `MultiSelect`). Novos props `label`/`placeholder`;
+   labels movidos das telas para o componente. `MultiSelectField.js` tipado via JSDoc (`MultiSelectOpt`).
+4. **Campo Adicional corrigido (máscara com estado)**: antes, `maskCurrencyDec("R$ 2,0")` reinterpretava a
+   última vírgula como decimal → travava em 2,00. Agora `adicionalMask` ref (`{int, dec, sep, seeded}`) +
+   `handleAdicionalChange`: dígito evolui a parte inteira (2→20→200), vírgula inicia os centavos (2 dígitos),
+   backspace reverte; fallback para `parseCurrencyInput` em edição no meio do texto.
+
+## Fixes pós-rodada 2
+- **Área de scroll do menu FAB** (`SpeedDial.tsx`): "Novo Agendamento" (item da base) ficava escondido.
+  Causa: `ScrollView` não encolhia dentro do painel com `maxHeight` — o conteúdo estourava para fora da
+  tela. Fix: `maxHeight: height * 0.88` + `style={styles.scrollView}` com **`flexShrink: 1`** no `ScrollView`
+  (rolando dentro da área visível).
+- **Sair do AgendamentoForm levava ao Início** (`AppNavigator.tsx` + `AgendamentoFormScreen.tsx`): o
+  `goBack()` no tab navigator caía no `backBehavior: 'firstRoute'` → Início **sem desempilhar** o
+  formulário (ficava preso na aba Agenda). Fix: `sairDaTela()` usa `getRootState()` → aba focada →
+  `CommonActions.navigate` para a **tela-raiz da aba** (`TAB_ROOT_SCREEN`: Dashboard/Agenda/Clientes/
+  Financeiro), desempilhando a pilha; `sairDoForm` → `popToTop()` se `canGoBack`, senão
+  `navigate('AgendaTab', { screen: 'Agenda' })`.
+
+## Validação (sessão completa)
+- `npx tsc --noEmit`: 0 erros.
+- `npx expo export --platform android`: bundle OK (último: `AppEntry-83f46f…`, 4 MB).
+- Fingerprint: `5324463898446a60971b8fb1a468d0db4602f3f8` **inalterado** (só JS; sem mudanças nativas).
+- `node --check` nos `.js` alterados (`.tsx` checados via tsc).
 
 ---
 
@@ -534,9 +595,10 @@ O fingerprint Android continua `5324463898446a60971b8fb1a468d0db4602f3f8` (só J
 
 ## Nova navegação (4 abas)
 - `AppNavigator.tsx`: abas **Início / Agenda / Clientes / Financeiro**. Serviços/Pacotes/Produtos/Categorias
-  saíram da barra e viraram rotas do **stack do Início** + **`SpeedDial`** em leque (`HomeSpeedDial`) sobre o
-  Início com 7 ações (Novo Agendamento, Cadastrar Cliente, Serviços & Pacotes, Produtos, Categorias, Vender
-  Pacote, Nova Conta) via `createNavigationContainerRef<TabParamList>()`.
+  saíram da barra e viraram rotas do **stack do Início** + **`SpeedDial`** em leque (`HomeSpeedDial`), montado
+  **globalmente** (todas as telas, `bottomOffset` = tab bar) com 7 ações (Novo Agendamento, Cadastrar Cliente,
+  Serviços & Pacotes, Produtos, Categorias, Vender Pacote, Nova Conta) via
+  `createNavigationContainerRef<TabParamList>()`.
 - Navigators tipados (`createBottomTabNavigator<TabParamList>()` / `createNativeStackNavigator<StackParamList>()`);
   navegação cruzada entre abas com `navigation.getParent<BottomTabNavigationProp<TabParamList>>()`.
 

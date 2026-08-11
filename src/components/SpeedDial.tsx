@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Pressable, StyleSheet, Animated } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { Modal, View, Text, TouchableOpacity, Pressable, StyleSheet, Animated, ScrollView, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing } from '../theme/colors';
@@ -17,11 +16,11 @@ interface SpeedDialProps {
   bottomOffset?: number;
 }
 
-// Botão flutuante em leque: ao tocar, expande as ações acima do botão.
-// Estilizado no design do app (gradiente primary→accent).
+// Botão de menu flutuante (esquerda): ao tocar, abre um painel compressível com scroll
+// listando as ações (ordem do array = de baixo para cima). Estilizado no design do app.
 export default function SpeedDial({ actions, bottomOffset = 0 }: SpeedDialProps) {
   const [open, setOpen] = useState(false);
-  const nav = useNavigation();
+  const { height } = useWindowDimensions();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const itemsAnim = useRef(new Animated.Value(0)).current;
 
@@ -48,31 +47,40 @@ export default function SpeedDial({ actions, bottomOffset = 0 }: SpeedDialProps)
       <Modal visible={open} transparent animationType="none" onRequestClose={closeMenu}>
         <Pressable style={styles.backdrop} onPress={closeMenu}>
           <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
-            <View style={[styles.actions, { paddingBottom: bottomOffset + 76 }]}>
-              {actions.map((action, i) => {
-                const delay = (actions.length - i) * 30;
-                return (
-                  <Animated.View
-                    key={action.key}
-                    style={{
-                      opacity: itemsAnim,
-                      transform: [
-                        { translateY: itemsAnim.interpolate({ inputRange: [0, 1], outputRange: [18 + delay, 0] }) },
-                      ],
-                    }}
-                  >
-                    <TouchableOpacity style={styles.actionRow} onPress={() => handleAction(action)} activeOpacity={0.85}>
-                      <View style={styles.actionLabel}>
-                        <Text style={styles.actionText}>{action.label}</Text>
-                      </View>
-                      <View style={styles.actionIconWrap}>
-                        <Ionicons name={action.icon} size={20} color={colors.primary} />
-                      </View>
-                    </TouchableOpacity>
-                  </Animated.View>
-                );
-              })}
-            </View>
+            <Animated.View style={[styles.panel, { paddingBottom: bottomOffset + 30, paddingLeft: 26, maxHeight: height * 0.88 }]}>
+              <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scroll}
+              >
+                {[...actions].reverse().map((action, i) => {
+                  const delay = (actions.length - i) * 30;
+                  return (
+                    <Animated.View
+                      key={action.key}
+                      style={[
+                        styles.itemWrap,
+                        {
+                          opacity: itemsAnim,
+                          transform: [
+                            { translateY: itemsAnim.interpolate({ inputRange: [0, 1], outputRange: [18 + delay, 0] }) },
+                          ],
+                        },
+                      ]}
+                    >
+                      <TouchableOpacity style={styles.actionRow} onPress={() => handleAction(action)} activeOpacity={0.85}>
+                        <View style={styles.actionIconWrap}>
+                          <Ionicons name={action.icon} size={20} color={colors.primary} />
+                        </View>
+                        <View style={styles.actionLabel}>
+                          <Text style={styles.actionText}>{action.label}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  );
+                })}
+              </ScrollView>
+            </Animated.View>
           </Animated.View>
         </Pressable>
       </Modal>
@@ -85,7 +93,7 @@ export default function SpeedDial({ actions, bottomOffset = 0 }: SpeedDialProps)
             end={{ x: 1, y: 1 }}
             style={styles.fab}
           >
-            <Ionicons name={open ? 'close' : 'add'} size={28} color={colors.textInverse} />
+            <Ionicons name={open ? 'close' : 'menu'} size={28} color={colors.textInverse} />
           </LinearGradient>
         </TouchableOpacity>
       </Animated.View>
@@ -95,32 +103,21 @@ export default function SpeedDial({ actions, bottomOffset = 0 }: SpeedDialProps)
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(46,33,38,0.45)' },
-  overlay: { flex: 1 },
-  actions: {
-    flex: 1,
+  overlay: { flex: 1, justifyContent: 'flex-end' },
+  panel: {
     justifyContent: 'flex-end',
-    alignItems: 'flex-end',
+    paddingLeft: 20,
     paddingRight: 20,
   },
+  scroll: { justifyContent: 'flex-end', alignItems: 'flex-start' },
+  scrollView: { flexShrink: 1 },
+  itemWrap: { alignSelf: 'flex-start' },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     marginBottom: spacing.md,
+    alignSelf: 'flex-start',
   },
-  actionLabel: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
-    marginRight: spacing.sm,
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  actionText: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
   actionIconWrap: {
     width: 44,
     height: 44,
@@ -128,15 +125,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: spacing.sm,
     shadowColor: '#000',
     shadowOpacity: 0.18,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 4,
   },
+  actionLabel: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  actionText: { fontSize: 13, fontWeight: '700', color: colors.textPrimary },
   fabWrap: {
     position: 'absolute',
-    right: 20,
+    left: 20,
     zIndex: 50,
     shadowColor: '#000',
     shadowOpacity: 0.28,

@@ -10,7 +10,7 @@ import Card from '../components/Card';
 import SegmentedControl from '../components/SegmentedControl';
 import DateField from '../components/DateField';
 import EmptyState from '../components/EmptyState';
-import StepperList from '../components/StepperList';
+import CheckboxStepper from '../components/CheckboxStepper';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
 import { colors, spacing } from '../theme/colors';
@@ -274,10 +274,14 @@ export default function VendaPacoteScreen({ route, navigation }: Props) {
               placeholder="Ex: Combo Manicure + Pedicure"
               error={erroNome}
             />
-            <Text style={styles.label}>Serviços incluídos</Text>
-            <StepperList
+            <CheckboxStepper
+              label="Serviços incluídos"
               options={listaServicos}
               emptyMessage="Nenhum serviço cadastrado"
+              onToggle={(value) => {
+                setQtds((prev) => ({ ...prev, [value]: Number(prev[value] || 0) > 0 ? 0 : 1 }));
+                setErroItens('');
+              }}
               onIncrement={(value) => {
                 setQtds((prev) => ({ ...prev, [value]: (prev[value] || 0) + 1 }));
                 setErroItens('');
