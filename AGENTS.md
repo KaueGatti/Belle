@@ -495,21 +495,35 @@ Configurado o **over-the-air (OTA)** para enviar correções de JS **sem rebuild
 
 ## Mudanças
 - **`package.json`** — adicionado `expo-updates` (via `npx expo install`).
-- **`app.json`** — seção `updates`:
-  - `url: "https://u.expo.dev/8f53ac6a-e1f6-4bed-b1f9-043b7f6ae160"`
-  - `runtimeVersion: { "policy": "fingerprint" }` (detecta quando é preciso novo APK: mudança nativa vs. só JS).
-- **`eas.json`** — canais por perfil: `preview` (APK interno) e `production` (app-bundle/Play Store).
+- **`app.json`** — seção `updates` com `url` + **`runtimeVersion: { "policy": "appVersion" }` no
+  topo de `expo`** (migrado de `fingerprint` em 11/08/2026 — ver "Por que `appVersion`" abaixo).
+- **`eas.json`** — `cli.appVersionSource: "remote"`; canais por perfil: `preview` (APK interno) e
+  `production` (app-bundle/Play Store).
 
 ## Rotina
 ```bash
-# APK novo (somente quando há mudança nativa: SDK, novo módulo nativo, permissões, ícone/nome)
+# APK novo (quando muda nativo/config/permissões OU quando sobe expo.version)
 npx eas build -p android --profile preview
 
 # Correção de código JS (telas, lógica, estilos) — sem novo APK
 npx eas update --channel preview --platform android
 ```
-Clientes abrem o app e o update baixa sozinho. O `runtimeVersion` `fingerprint`
-muda quando o binário nativo muda; enquanto o JS só for alterado, o OTA cobre.
+Clientes abrem o app e o update baixa sozinho. A **runtime version = `expo.version`** (ex.: `1.0.0`).
+**Regra:** mudou código nativo/config/permissões → suba `version` no `app.json` (ex.: `1.0.1`),
+rebuild do APK e depois `eas update` (a runtime version acompanha `version`). JS puro → só `eas update`.
+
+## Por que `appVersion` (e não `fingerprint`) — 11/08/2026
+- O eas-cli **21.6.0 e 21.7.1 ignoram o `runtimeVersion.policy: "fingerprint"` aninhado em
+  `updates.runtimeVersion`**: em todo `eas update` ele re-gravava `android.runtimeVersion:
+  {policy: "appVersion"}` no `app.json` (mais permissão `SCHEDULE_EXACT_ALARM` duplicada) e publicava
+  com runtime `1.0.0` — que **não era aceito** pelo APK instalado (runtime embutida = fingerprint),
+  por isso o app não atualizava (na 1ª tentativa o erro era "Unable to determine runtime version for
+  Android").
+- Fix: `npx eas update:configure` + mover a política para o **topo** de `expo` (`runtimeVersion:
+  {policy: "appVersion"}`) e remover o `updates.runtimeVersion`. Com isso o `eas update` publica
+  runtime `1.0.0` e **não altera mais o `app.json`** (verificado). A doc oficial do Expo recomenda
+  `appVersion` (o `fingerprint` é "experimental").
+- `git checkout app.json` reverte o artefato caso o eas-cli o injete de novo.
 
 ## Validação
 - `npx expo export --platform android` (bundle OK).
@@ -563,14 +577,14 @@ funcionando durante a transição: o boom é Babel (`babel-preset-expo` transpil
   normalmente (misto permitido por `allowJs`).
 - Validação contínua: `npx tsc --noEmit` + `npx expo export --platform android`.
 
-## OTA / fingerprint (importante)
-- **não adicionar** scripts novos ao `package.json` agora: `packageJson:scripts` **entra no
-  fingerprint** (`runtimeVersion: fingerprint`). Código-fonte (`.ts`/`.tsx`), `tsconfig.json` e
-  devDependencies **não** alteram o fingerprint (verificado empíricamente — `npx @expo/fingerprint`).
-- Fingerprint atual inalterado (`53244638…`); muda apenas com `eas.json`, `.gitignore`, `app.json`,
-  scripts, ícones, autolinking nativo ou versões do `react-native`.
-- Regra: depois de **qualquer** mudança que mude o fingerprint, buildar/instalar novo APK antes do
-  próximo `eas update`.
+## OTA / runtime version (importante)
+- **Runtime version = `appVersion` desde 11/08/2026** (migrado de `fingerprint` — ver seção OTA).
+  O eas-cli 21.x sobrescrevia o `fingerprint` aninhado em `updates.runtimeVersion` para `appVersion`
+  e publicava runtime `1.0.0`, então a política foi movida para o **topo** de `expo`.
+- Scripts novos no `package.json` **não alteram mais a runtime version** (deixou de ser `fingerprint`);
+  porém ainda entram no fingerprint nativo — evite scripts desnecessários para não forçar rebuild.
+- Regra atual: mudou nativo/config/permissões ou subiu `expo.version` → novo APK antes do próximo
+  `eas update` (a runtime version acompanha `version`).
 
 ## Validação
 - `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK) + fingerprint intacto.
