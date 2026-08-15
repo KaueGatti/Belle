@@ -113,22 +113,9 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   const [conflitoModal, setConflitoModal] = useState<Agendamento | null>(null);
   const [confirmarConta, setConfirmarConta] = useState(false);
 
-  function sairDoForm() {
-    if (navigation.canGoBack()) {
-      navigation.popToTop();
-    } else {
-      tabNavigation?.navigate('AgendaTab', { screen: 'Agenda' });
-    }
-  }
-
   useLayoutEffect(() => {
     navigation.setOptions({
       title: existente ? 'Editar Agendamento' : 'Novo Agendamento',
-      headerRight: () => (
-        <TouchableOpacity onPress={sairDoForm} activeOpacity={0.7}>
-          <Text style={styles.sairBtn}>Sair</Text>
-        </TouchableOpacity>
-      ),
     });
   }, [navigation, existente]);
 
@@ -1030,7 +1017,6 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row' },
-  sairBtn: { color: colors.primary, fontWeight: '700', fontSize: 15 },
   label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 6, marginTop: 4 },
   semServicos: {
     backgroundColor: colors.surfaceAlt,

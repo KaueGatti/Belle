@@ -142,14 +142,18 @@ Persistência: cada estado tem `useEffect` que grava no AsyncStorage somente ap�
   perto do FAB); área de clique = só o ícone+texto (`alignSelf: 'flex-start'`). Ações: Novo Agendamento,
   Cadastrar Cliente, Vender Pacote, Serviços & Pacotes, Produtos, Nova Conta e Categorias (navegação
   cruzada via `createNavigationContainerRef<TabParamList>()`).
-- **Botão "Sair" global**: `headerRight` padrão em `useStackScreenOptions()` (`sairDaTela()`).
-  `sairDaTela` **não usa `goBack()`** (o `goBack` no tab navigator cai no `backBehavior: 'firstRoute'`
-  e joga para o Início sem desempilhar a tela); em vez disso ele faz `getRootState()` → rota focada →
-  `CommonActions.navigate` para a **tela-raiz da aba atual** (`TAB_ROOT_SCREEN`: Dashboard/Agenda/Clientes/
-  Financeiro), desempilhando qualquer tela empilhada. Telas-raiz (Dashboard, Agenda, Clientes, Financeiro)
-  sobrescrevem com `headerRight: () => null`. Telas que definem o próprio `headerRight` (ex.: AgendamentoForm,
-  com `sairDoForm` → `popToTop` se `canGoBack`, senão `navigate('AgendaTab', { screen: 'Agenda' })`)
-  sobrescrevem o global.
+- **Botão "Sair" global**: `headerRight` padrão em `useStackScreenOptions()` (`irParaRaizDaAba()`).
+  `irParaRaizDaAba` **não usa `goBack()`** (o `goBack` no tab navigator cai no `backBehavior: 'firstRoute'`
+  e joga para o Início sem desempilhar a tela). Ele faz `getRootState()` → rota focada → **`StackActions.popToTop()`
+  com `target` = `route.state.key` do stack da aba** (reset limpo, sem deixar telas "mortas" empilhadas);
+  fallback para `CommonActions.navigate` à tela-raiz (`TAB_ROOT_SCREEN`: Dashboard/Agenda/Clientes/Financeiro)
+  quando não há estado aninhado. Telas-raiz (Dashboard, Agenda, Clientes, Financeiro) sobrescrevem com
+  `headerRight: () => null`. **Nenhuma tela define `headerRight` próprio** (AgendamentoForm já não sobrescreve —
+  o global cuida; o motivo do antigo `sairDoForm` era o `goBack` quebrado).
+- **Clique na aba já focada = volta para a raiz da aba**: `screenListeners` no `Tab.Navigator` com handler de
+  `tabPress` — se a aba pressionada (`e.target`) é a aba já focada, chama `irParaRaizDaAba()` (ex.: de
+  `AgendamentoForm`, tocar em "Agenda" na navbar → volta para `Agenda`). Sem isso o bottom-tabs v7 **não faz
+  nada** ao re-pressionar a aba focada (o `onPress` interno só navega quando `!focused`).
 - Navegação cruzada entre abas (ex.: telas do stack de Agenda → ClientesTab) via
   `navigation.getParent<BottomTabNavigationProp<TabParamList>>()`.
 - Opções de stack via `useStackScreenOptions()` (header claro, sem sombra, `contentStyle` de fundo).
@@ -202,6 +206,7 @@ Persistência: cada estado tem `useEffect` que grava no AsyncStorage somente ap�
 | `EmptyState` | Estado vazio com ícone sobre fundo **gradiente**. |
 | `Logo` | Logo vetorial: círculo `LinearGradient` + anel + brilho + ícone `brush` + nome opcional (`showName`). |
 | `Toast` | `ToastProvider` + hook `useToast().showToast(msg, type)` — topo da tela, animado, 2,6s, tipos `success`/`error`/`info`. |
+| `AppModal` | Bottom sheet com título/ícone + backdrop. **Overlay in-screen** (absoluto dentro da tela, não é RN `Modal`) para o header nativo permanecer tocável; `BackHandler` fecha no voltar do Android. Usado nos modais de conflito/"Gerar conta?" do `AgendamentoForm`. |
 | `NotificationSync` | Componente invisível dentro do `DataProvider` que reage a `agendamentos`/`clientes` e sincroniza notificações locais. |
 
 ---
@@ -629,3 +634,44 @@ O fingerprint Android continua `5324463898446a60971b8fb1a468d0db4602f3f8` (só J
 
 ## Validação
 - `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK) + fingerprint intacto.
+
+---
+
+# Última Sessão (atual) — Fix de navegação: aba focada volta à raiz + "Sair" confiável
+
+Correções na navegação (todas em `.tsx`; fingerprint nativo intacto, só JS).
+
+## Problemas encontrados
+1. **Tocar na aba já focada não fazia nada** — no `@react-navigation/bottom-tabs` v7 o `onPress` de cada aba
+   só navega quando a aba **não** está focada (`if (!focused && !event.defaultPrevented)`). De dentro de uma
+   tela empilhada (ex.: `AgendamentoForm`), tocar em "Agenda" na navbar não voltava à raiz.
+2. **"Sair" do header às vezes não funcionava (principalmente no `AgendamentoForm`)**:
+   - O antigo `sairDaTela()` usava `CommonActions.navigate` sem `pop`; no `StackRouter` v7, `navigate` para rota
+     já existente **não desempilha** (remove e re-adiciona a rota no topo — `StackRouter.js`), deixando telas
+     "mortas" na pilha (o voltar voltava para telas antigas).
+   - No `AgendamentoForm`, os modais de **conflito de horário**/"Gerar conta a receber?" eram `RN Modal`
+     full-screen (o `AppModal` antigo), cujo backdrop **cobria o header nativo** — o toque no "Sair" caía no
+     backdrop (só fechava o modal), parecendo que o botão quebrou.
+
+## Fixes
+- **`src/navigation/AppNavigator.tsx`**:
+  - Novo helper `irParaRaizDaAba()`: lê `getRootState()` → rota focada → `StackActions.popToTop()` com
+    `target` = `route.state.key` do **stack da aba** (reset limpo, sem telas mortas); fallback para o
+    `CommonActions.navigate` à tela-raiz quando não há estado aninhado.
+  - O `headerRight` global ("Sair") agora chama `irParaRaizDaAba()` (antes `sairDaTela`).
+  - `screenListeners` no `Tab.Navigator`: handler de `tabPress` — se `e.target` (aba pressionada) === aba já
+    focada, chama `irParaRaizDaAba()` (volta para a raiz da aba). Abas não focadas mantêm o comportamento padrão.
+- **`src/screens/AgendamentoFormScreen.tsx`**: removidos o `headerRight` custom e o `sairDoForm` (o "Sair"
+  global cuida; título continua definido via `setOptions`). Removido o estilo `sairBtn` morto.
+- **`src/components/AppModal.tsx`**: `RN Modal` → **overlay in-screen** (posição absoluta dentro do conteúdo
+  da tela, `zIndex` 10) com fade (`Animated`). O header nativo fica sempre tocável, então o "Sair" funciona
+  mesmo com o modal de conflito/"Gerar conta?" aberto. `BackHandler` (Android) fecha o modal. Único uso atual
+  é no `AgendamentoForm` (2 modais).
+
+## Regras/notas
+- **`navigate` para rota já existente NÃO desempilha no v7** — sempre preferir `StackActions.popToTop()` com
+  `target` para resetar um stack (não usar `goBack()` nem `navigate` puro para "voltar à raiz").
+- O "Sair" global **não** deve ser sobrescrito por telas; o `AgendamentoForm` deixou de sobrescrevê-lo.
+
+## Validação
+- `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK).

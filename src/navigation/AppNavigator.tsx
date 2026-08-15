@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
-import { NavigationContainer, createNavigationContainerRef, CommonActions } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef, CommonActions, StackActions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -42,15 +42,23 @@ const TAB_ROOT_SCREEN: Partial<Record<keyof TabParamList, keyof StackParamList>>
   FinanceiroTab: 'Financeiro',
 };
 
-function sairDaTela() {
+// Volta para a tela-raiz do stack da aba atualmente focada (popToTop limpo,
+// sem deixar telas "mortas" empilhadas). Usado pelo botão "Sair" e pelo
+// clique na aba já focada.
+function irParaRaizDaAba() {
   if (!navigationRef.isReady()) return;
   const rootState = navigationRef.getRootState();
   const route = rootState?.routes?.[rootState?.index ?? -1];
   if (!route) return;
-  const tabName = route.name as keyof TabParamList;
-  const rootScreen = TAB_ROOT_SCREEN[tabName];
-  if (rootScreen) {
-    navigationRef.dispatch(CommonActions.navigate({ name: tabName, params: { screen: rootScreen } }));
+  const stackKey = (route as { state?: { key?: string } })?.state?.key;
+  if (stackKey) {
+    navigationRef.dispatch({ ...StackActions.popToTop(), target: stackKey });
+  } else {
+    const tabName = route.name as keyof TabParamList;
+    const rootScreen = TAB_ROOT_SCREEN[tabName];
+    if (rootScreen) {
+      navigationRef.dispatch(CommonActions.navigate({ name: tabName, params: { screen: rootScreen } }));
+    }
   }
 }
 
@@ -63,7 +71,7 @@ function useStackScreenOptions(): NativeStackNavigationOptions {
     ...(Platform.OS === 'android' ? { statusBarTranslucent: true } : {}),
     contentStyle: { backgroundColor: colors.background },
     headerRight: () => (
-      <TouchableOpacity onPress={sairDaTela} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+      <TouchableOpacity onPress={irParaRaizDaAba} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
         <Text style={{ color: colors.primary, fontSize: 15, fontWeight: '700' }}>Sair</Text>
       </TouchableOpacity>
     ),
@@ -185,6 +193,17 @@ export default function AppNavigator() {
     <NavigationContainer ref={navigationRef}>
       <View style={{ flex: 1 }}>
         <Tab.Navigator
+          screenListeners={({ route }) => ({
+            tabPress: (e) => {
+              if (e.target !== route.key) return;
+              if (!navigationRef.isReady()) return;
+              const rootState = navigationRef.getRootState();
+              const focusedTab = rootState?.routes?.[rootState?.index ?? -1];
+              if (focusedTab?.key === route.key) {
+                irParaRaizDaAba();
+              }
+            },
+          })}
           screenOptions={({ route }) => ({
             headerShown: false,
             tabBarActiveTintColor: colors.primary,
