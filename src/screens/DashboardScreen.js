@@ -57,7 +57,7 @@ export default function DashboardScreen({ navigation }) {
           >
             <View style={styles.heroHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.heroGreeting}>Olá Josiane!</Text>
+                <Text style={styles.heroGreeting}>Olá!</Text>
                 <Text style={styles.heroSub}>Resumo do seu negócio</Text>
               </View>
               <TouchableOpacity
@@ -124,6 +124,7 @@ export default function DashboardScreen({ navigation }) {
                   navigation.navigate('AgendaTab', {
                     screen: 'AgendamentoForm',
                     params: { agendamentoId: a.id },
+                    initial: false,
                   })
                 }
               >

@@ -64,6 +64,7 @@ export default function ClienteHistoricoScreen({ route, navigation }) {
                 navigation.navigate('AgendaTab', {
                   screen: 'AgendamentoForm',
                   params: { agendamentoId: null, clientePreset: cliente.id },
+                  initial: false,
                 })
               }
               style={{ marginBottom: spacing.md }}
@@ -82,7 +83,7 @@ export default function ClienteHistoricoScreen({ route, navigation }) {
             style={styles.item}
             activeOpacity={0.7}
             onPress={() =>
-              navigation.navigate('AgendaTab', { screen: 'AgendamentoForm', params: { agendamentoId: a.id } })
+              navigation.navigate('AgendaTab', { screen: 'AgendamentoForm', params: { agendamentoId: a.id }, initial: false })
             }
           >
             <View style={{ flex: 1 }}>

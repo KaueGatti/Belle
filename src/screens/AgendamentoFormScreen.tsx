@@ -13,6 +13,7 @@ import TimeField from '../components/TimeField';
 import EmptyState from '../components/EmptyState';
 import CheckboxStepper from '../components/CheckboxStepper';
 import AppModal from '../components/AppModal';
+import Card from '../components/Card';
 import { useToast } from '../components/Toast';
 import { useData } from '../context/DataContext';
 import { colors, spacing, radius } from '../theme/colors';
@@ -21,13 +22,14 @@ import {
   formatDateBR,
   maskCurrency,
   maskCurrencyInput,
+  maskPercent,
   parseCurrencyInput,
   todayISO,
   horaParaMin,
   minParaHora,
 } from '../utils/format';
 import type { StackParamList, TabParamList } from '../types/navigation';
-import type { Agendamento, ProdutoItem } from '../types/entities';
+import type { Agendamento, Compromisso, ProdutoItem } from '../types/entities';
 
 type Props = NativeStackScreenProps<StackParamList, 'AgendamentoForm'>;
 
@@ -38,6 +40,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
     servicos,
     produtos,
     agendamentos,
+    compromissos,
     getAgendamento,
     addAgendamento,
     updateAgendamento,
@@ -91,6 +94,15 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
     sep: false,
     seeded: false,
   });
+  const [tipoDesconto, setTipoDesconto] = useState<'percent' | 'fixed'>(existente?.tipoDesconto || 'percent');
+  const [descontoTexto, setDescontoTexto] = useState(
+    existente?.desconto != null && Number(existente.desconto) > 0
+      ? existente.tipoDesconto === 'percent'
+        ? String(Math.round((Number(existente.desconto) / Math.max(1, existente.valor + Number(existente.desconto))) * 100))
+        : maskCurrency(existente.desconto)
+      : ''
+  );
+  const [erroDesconto, setErroDesconto] = useState('');
   const [valorTexto, setValorTexto] = useState(existente?.valor != null ? maskCurrency(existente.valor) : '');
   const [valorEditado, setValorEditado] = useState(existente?.valor != null);
   const [sinalTexto, setSinalTexto] = useState(
@@ -111,6 +123,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   );
   const [erros, setErros] = useState<Partial<Record<string, string>>>({});
   const [conflitoModal, setConflitoModal] = useState<Agendamento | null>(null);
+  const [conflitoCompromisso, setConflitoCompromisso] = useState<Compromisso | null>(null);
   const [confirmarConta, setConfirmarConta] = useState(false);
 
   useLayoutEffect(() => {
@@ -181,10 +194,21 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   const adicionalNum = useMemo(() => parseCurrencyInput(adicionalTexto), [adicionalTexto]);
   const totalSugerido = somaServicos + somaProdutos + adicionalNum;
 
+  const descontoValor = useMemo(() => {
+    if (!totalSugerido) return 0;
+    if (tipoDesconto === 'percent') {
+      const pct = parseInt((descontoTexto || '').replace(/\D/g, ''), 10) || 0;
+      return (totalSugerido * Math.min(pct, 100)) / 100;
+    }
+    return parseCurrencyInput(descontoTexto);
+  }, [totalSugerido, tipoDesconto, descontoTexto]);
+
+  const valorFinalDescontado = Math.max(0, totalSugerido - descontoValor);
+
   // Valor total em modo pacote considera apenas produtos/adicional (serviços cobertos)
   function valorAuto() {
     const base = usarPacote ? 0 : somaServicos;
-    return base + somaProdutos + adicionalNum;
+    return Math.max(0, base + somaProdutos + adicionalNum - descontoValor);
   }
 
   function atualizarValorAuto() {
@@ -246,7 +270,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   // exceto quando o usuário edita manualmente o campo.
   useEffect(() => {
     if (!valorEditado) setValorTexto(maskCurrency(valorAuto()));
-  }, [qtdsService, qtdsProduto, adicionalNum, valorEditado, usarPacote]);
+  }, [qtdsService, qtdsProduto, adicionalNum, valorEditado, usarPacote, descontoValor]);
 
   function opcoesServicos() {
     return servicos
@@ -416,17 +440,42 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
     );
   }
 
+  function achaConflitoCompromisso(dataX: string, horaX: string): Compromisso | null {
+    const d = duracaoEfetiva();
+    if (d <= 0) return null;
+    const inicio = horaParaMin(horaX);
+    const fim = inicio + d;
+    return (
+      compromissos.find((c) => {
+        if (c.data !== dataX) return false;
+        const ci = horaParaMin(c.horaInicio);
+        const cf = horaParaMin(c.horaFim);
+        return inicio < cf && fim > ci;
+      }) || null
+    );
+  }
+
   function handleDataChange(d: string) {
     setData(d);
     setErros((p) => ({ ...p, hora: undefined }));
     const c = achaConflito(d, hora);
-    if (c) setConflitoModal(c);
+    if (c) {
+      setConflitoModal(c);
+      return;
+    }
+    const cp = achaConflitoCompromisso(d, hora);
+    if (cp) setConflitoCompromisso(cp);
   }
   function handleHoraChange(h: string) {
     setHora(h);
     setErros((p) => ({ ...p, hora: undefined }));
     const c = achaConflito(data, h);
-    if (c) setConflitoModal(c);
+    if (c) {
+      setConflitoModal(c);
+      return;
+    }
+    const cp = achaConflitoCompromisso(data, h);
+    if (cp) setConflitoCompromisso(cp);
   }
 
   function prepararDados() {
@@ -475,7 +524,12 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
     if (!clienteId) novosErros.cliente = 'Selecione a cliente';
     if (duracaoEfetiva() <= 0) novosErros.duracao = 'Informe a duração do atendimento';
     const c = achaConflito(data, hora);
-    if (c) novosErros.hora = 'Horário já ocupado';
+    if (c) {
+      novosErros.hora = 'Horário já ocupado';
+    } else {
+      const cp = achaConflitoCompromisso(data, hora);
+      if (cp) novosErros.hora = 'Horário indisponível (compromisso)';
+    }
 
     if (pago && !usarPacote && !sorteio && (status === 'agendado' || status === 'concluido') && !dataPagamento) {
       novosErros.dataPagamento = 'Informe a data do pagamento';
@@ -499,6 +553,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
       const sinalNum = parseCurrencyInput(sinalTexto);
       if (sinalNum > valor) novosErros.sinal = 'O sinal não pode ser maior que o valor';
     }
+    if (descontoValor > totalSugerido) novosErros.desconto = 'O desconto não pode ser maior que o valor total';
     // Valida estoque dos produtos durante a venda
     const semEstoque = produtosItens.some((it) => {
       const p = produtos.find((x) => x.id === it.produtoId);
@@ -512,7 +567,12 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
   function handleSalvar() {
     if (!validar()) {
       const c = achaConflito(data, hora);
-      if (c) setConflitoModal(c);
+      if (c) {
+        setConflitoModal(c);
+      } else {
+        const cp = achaConflitoCompromisso(data, hora);
+        if (cp) setConflitoCompromisso(cp);
+      }
       return;
     }
     const { valor } = prepararDados();
@@ -564,6 +624,8 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
       ) as Record<string, number>,
       produtos: produtosItens,
       adicional: adicionalNum || undefined,
+      desconto: descontoValor > 0 ? descontoValor : undefined,
+      tipoDesconto: descontoValor > 0 ? tipoDesconto : undefined,
       valor: valorFinal,
       sinal: sinalFinal,
       pacoteVendaId: pacoteVendaIdFinal,
@@ -672,6 +734,40 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
     );
   }
 
+  function ConflitoCompromissoModal() {
+    if (!conflitoCompromisso) return null;
+    return (
+      <AppModal
+        visible={Boolean(conflitoCompromisso)}
+        onClose={() => setConflitoCompromisso(null)}
+        title="Horário indisponível"
+        icon="lock-closed-outline"
+        iconColor={colors.danger}
+      >
+        <View style={styles.modalCard}>
+          <View style={styles.modalRow}>
+            <Text style={styles.modalLabel}>Compromisso</Text>
+            <Text style={styles.modalValue}>{conflitoCompromisso.titulo}</Text>
+          </View>
+          <View style={styles.modalRow}>
+            <Text style={styles.modalLabel}>Data</Text>
+            <Text style={styles.modalValue}>{formatDateBR(conflitoCompromisso.data)}</Text>
+          </View>
+          <View style={styles.modalRow}>
+            <Text style={styles.modalLabel}>Horário</Text>
+            <Text style={styles.modalValue}>
+              {conflitoCompromisso.horaInicio} – {conflitoCompromisso.horaFim}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.modalHint}>
+          Você tem um compromisso pessoal nesse período. Ajuste o horário do atendimento para continuar.
+        </Text>
+        <Button title="Entendi" onPress={() => setConflitoCompromisso(null)} style={{ marginTop: spacing.md }} />
+      </AppModal>
+    );
+  }
+
   function ConfirmarContaModal() {
     return (
       <AppModal
@@ -728,7 +824,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
         <Button
           title="Cadastrar Cliente"
           onPress={() =>
-            tabNavigation?.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null } })
+            tabNavigation?.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null }, initial: false })
           }
           style={{ marginHorizontal: spacing.md }}
         />
@@ -817,7 +913,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
                 title="Cadastrar Serviço"
                 variant="outline"
                 onPress={() =>
-                  tabNavigation?.navigate('DashboardTab', { screen: 'ServicoForm', params: { servicoId: null } })
+                  tabNavigation?.navigate('DashboardTab', { screen: 'ServicoForm', params: { servicoId: null }, initial: false })
                 }
                 style={{ marginTop: spacing.sm }}
               />
@@ -892,6 +988,52 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
               keyboardType="decimal-pad"
               style={{ marginTop: spacing.sm }}
             />
+
+            {totalSugerido > 0 ? (
+              <>
+                <Text style={[styles.label, { marginTop: spacing.sm }]}>Desconto</Text>
+                <SegmentedControl
+                  options={[
+                    { label: 'Percentual (%)', value: 'percent' },
+                    { label: 'Valor (R$)', value: 'fixed' },
+                  ]}
+                  value={tipoDesconto}
+                  onChange={setTipoDesconto}
+                />
+                <Input
+                  label="Desconto"
+                  value={descontoTexto}
+                  onChangeText={(t) => {
+                    if (tipoDesconto === 'percent') {
+                      setDescontoTexto(maskPercent(t));
+                    } else {
+                      setDescontoTexto(maskCurrencyInput(t));
+                    }
+                    setErroDesconto('');
+                  }}
+                  placeholder={tipoDesconto === 'percent' ? '0%' : 'R$ 0,00'}
+                  keyboardType="decimal-pad"
+                  error={erros.desconto}
+                  style={{ marginTop: spacing.sm }}
+                />
+                {descontoValor > 0 ? (
+                  <Card style={{ marginTop: spacing.sm }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
+                      <Text style={{ fontSize: 13, color: colors.textSecondary }}>Valor total</Text>
+                      <Text style={{ fontSize: 13, color: colors.textSecondary }}>{formatCurrency(totalSugerido)}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
+                      <Text style={{ fontSize: 13, color: colors.textSecondary }}>Desconto</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.danger }}>-{formatCurrency(descontoValor)}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderTopWidth: 1, borderTopColor: colors.border, marginTop: 4 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.textPrimary }}>Total com desconto</Text>
+                      <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary }}>{formatCurrency(valorFinalDescontado)}</Text>
+                    </View>
+                  </Card>
+                ) : null}
+              </>
+            ) : null}
 
             <Input
               label="Sinal (valor recebido antecipado)"
@@ -1010,6 +1152,7 @@ export default function AgendamentoFormScreen({ route, navigation }: Props) {
       </ScrollView>
 
       <ConflitoModal />
+      <ConflitoCompromissoModal />
       <ConfirmarContaModal />
     </Screen>
   );

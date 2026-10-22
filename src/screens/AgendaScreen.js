@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import EmptyState from '../components/EmptyState';
 import StatusBadge from '../components/StatusBadge';
@@ -16,32 +17,40 @@ function addDays(iso, days) {
 }
 
 export default function AgendaScreen({ navigation }) {
-  const { agendamentos, getCliente, formatAgendamentoServicos } = useData();
+  const { agendamentos, compromissos, getCliente, formatAgendamentoServicos } = useData();
   const [filtro, setFiltro] = useState('proximos'); // proximos | hoje | todos
 
   const secoes = useMemo(() => {
     const hoje = todayISO();
     const semanaLimite = addDays(hoje, 7);
 
-    let lista = [...agendamentos];
+    let ags = [...agendamentos];
+    let cps = [...compromissos];
     if (filtro === 'hoje') {
-      lista = lista.filter((a) => a.data === hoje);
+      ags = ags.filter((a) => a.data === hoje);
+      cps = cps.filter((c) => c.data === hoje);
     } else if (filtro === 'proximos') {
-      lista = lista.filter((a) => a.data >= hoje && a.data <= semanaLimite && a.status !== 'cancelado');
+      ags = ags.filter((a) => a.data >= hoje && a.data <= semanaLimite && a.status !== 'cancelado');
+      cps = cps.filter((c) => c.data >= hoje && c.data <= semanaLimite);
     }
 
-    lista.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
-
     const grupos = {};
-    lista.forEach((a) => {
+    ags.forEach((a) => {
       if (!grupos[a.data]) grupos[a.data] = [];
-      grupos[a.data].push(a);
+      grupos[a.data].push({ tipo: 'agendamento', chave: `ag-${a.id}`, horaOrdem: a.hora, item: a });
+    });
+    cps.forEach((c) => {
+      if (!grupos[c.data]) grupos[c.data] = [];
+      grupos[c.data].push({ tipo: 'compromisso', chave: `cp-${c.id}`, horaOrdem: c.horaInicio, item: c });
     });
 
     return Object.keys(grupos)
       .sort()
-      .map((data) => ({ title: data, data: grupos[data] }));
-  }, [agendamentos, filtro]);
+      .map((data) => ({
+        title: data,
+        data: grupos[data].sort((a, b) => String(a.horaOrdem).localeCompare(String(b.horaOrdem))),
+      }));
+  }, [agendamentos, compromissos, filtro]);
 
   return (
     <Screen>
@@ -59,7 +68,7 @@ export default function AgendaScreen({ navigation }) {
 
       <SectionList
         sections={secoes}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.chave}
         contentContainerStyle={{ padding: spacing.md, paddingBottom: 100 }}
         stickySectionHeadersEnabled={false}
         ListEmptyComponent={
@@ -72,35 +81,75 @@ export default function AgendaScreen({ navigation }) {
         renderSectionHeader={({ section }) => (
           <Text style={styles.sectionTitle}>{formatDateShortWeekday(section.title)}</Text>
         )}
-        renderItem={({ item }) => {
-          const cliente = getCliente(item.clienteId);
-          return (
-            <TouchableOpacity
-              style={styles.item}
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate('AgendamentoForm', { agendamentoId: item.id })}
-            >
-              <View style={styles.horaBox}>
-                <Text style={styles.horaText}>{item.hora}</Text>
-              </View>
-              <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                <Text style={styles.cliente}>{cliente ? cliente.nome : 'Cliente removido'}</Text>
-                <Text style={styles.servico}>
-                  {formatAgendamentoServicos(item)}
-                  {item.duracao ? ` • ${item.duracao} min` : ''}
-                </Text>
-              </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.valor}>{formatCurrency(item.valor)}</Text>
-                <StatusBadge status={item.status} />
-              </View>
-            </TouchableOpacity>
-          );
-        }}
+        renderItem={({ item }) =>
+          item.tipo === 'compromisso' ? (
+            <CompromissoItem
+              compromisso={item.item}
+              onPress={() => navigation.navigate('CompromissoForm', { compromissoId: item.item.id })}
+            />
+          ) : (
+            <AgendamentoItem
+              agendamento={item.item}
+              getCliente={getCliente}
+              formatAgendamentoServicos={formatAgendamentoServicos}
+              onPress={() => navigation.navigate('AgendamentoForm', { agendamentoId: item.item.id })}
+            />
+          )
+        }
       />
 
       <Fab onPress={() => navigation.navigate('AgendamentoForm', { agendamentoId: null })} />
     </Screen>
+  );
+}
+
+function AgendamentoItem({ agendamento, getCliente, formatAgendamentoServicos, onPress }) {
+  const cliente = getCliente(agendamento.clienteId);
+  return (
+    <TouchableOpacity
+      style={styles.item}
+      activeOpacity={0.7}
+      onPress={onPress}
+    >
+      <View style={styles.horaBox}>
+        <Text style={styles.horaText}>{agendamento.hora}</Text>
+      </View>
+      <View style={{ flex: 1, marginLeft: spacing.sm }}>
+        <Text style={styles.cliente}>{cliente ? cliente.nome : 'Cliente removido'}</Text>
+        <Text style={styles.servico}>
+          {formatAgendamentoServicos(agendamento)}
+          {agendamento.duracao ? ` • ${agendamento.duracao} min` : ''}
+        </Text>
+      </View>
+      <View style={{ alignItems: 'flex-end' }}>
+        <Text style={styles.valor}>{formatCurrency(agendamento.valor)}</Text>
+        <StatusBadge status={agendamento.status} />
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function CompromissoItem({ compromisso, onPress }) {
+  return (
+    <TouchableOpacity
+      style={[styles.item, styles.compromissoItem]}
+      activeOpacity={0.7}
+      onPress={onPress}
+    >
+      <View style={styles.compromissoHoraBox}>
+        <Text style={styles.compromissoHoraText}>{compromisso.horaInicio}</Text>
+      </View>
+      <View style={{ flex: 1, marginLeft: spacing.sm }}>
+        <Text style={styles.compromissoTitulo}>{compromisso.titulo}</Text>
+        <Text style={styles.compromissoPeriodo}>
+          {compromisso.horaInicio} – {compromisso.horaFim}
+        </Text>
+      </View>
+      <View style={styles.compromissoBadge}>
+        <Ionicons name="lock-closed" size={11} color={colors.textSecondary} />
+        <Text style={styles.compromissoBadgeText}>Indisponível</Text>
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -129,4 +178,31 @@ const styles = StyleSheet.create({
   cliente: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
   servico: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
   valor: { fontWeight: '700', color: colors.textPrimary, marginBottom: 4 },
+  compromissoItem: {
+    backgroundColor: colors.surfaceAlt,
+    borderStyle: 'dashed',
+  },
+  compromissoHoraBox: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  compromissoHoraText: { fontWeight: '700', color: colors.textSecondary },
+  compromissoTitulo: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  compromissoPeriodo: { fontSize: 13, color: colors.textSecondary, marginTop: 2 },
+  compromissoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.pill,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+  },
+  compromissoBadgeText: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
 });

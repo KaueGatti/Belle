@@ -33,6 +33,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     pacotes,
     pacotesVendidos,
     produtos,
+    compromissos,
     restoreSnapshot,
   } = useData();
   const { user } = useAuth();
@@ -57,6 +58,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     pacotes,
     pacotesVendidos,
     produtos,
+    compromissos,
   };
 
   async function syncNow(): Promise<boolean> {

@@ -16,6 +16,7 @@ export type StackParamList = {
   // Agenda
   Agenda: undefined;
   AgendamentoForm: { agendamentoId?: string | null; clientePreset?: string | null } | undefined;
+  CompromissoForm: { compromissoId?: string | null } | undefined;
   // Clientes
   Clientes: undefined;
   ClienteConsulta: { clienteId: string };

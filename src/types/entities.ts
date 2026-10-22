@@ -38,6 +38,8 @@ export interface Agendamento {
   servicosQtd?: Record<string, number>; // id do serviço -> quantidade
   produtos?: ProdutoItem[]; // produtos vendidos no agendamento
   adicional?: number; // valor extra livre (R$)
+  desconto?: number; // valor absoluto do desconto (R$)
+  tipoDesconto?: 'percent' | 'fixed'; // tipo do desconto (porcentagem ou valor fixo)
   servico?: string;
   valor: number;
   sinal?: number;
@@ -112,6 +114,18 @@ export interface PacoteVendido {
   updatedAt?: number;
 }
 
+// Bloco de horário indisponível (compromisso pessoal da profissional)
+export interface Compromisso {
+  id: string;
+  titulo: string;
+  data: string; // 'YYYY-MM-DD'
+  horaInicio: string; // 'HH:mm'
+  horaFim: string; // 'HH:mm'
+  observacoes?: string;
+  createdAt: number;
+  updatedAt?: number;
+}
+
 export interface DadosApp {
   clientes: Cliente[];
   agendamentos: Agendamento[];
@@ -121,6 +135,7 @@ export interface DadosApp {
   pacotes: Pacote[];
   pacotesVendidos: PacoteVendido[];
   produtos: Produto[];
+  compromissos: Compromisso[];
 }
 
 export interface BackupSnapshot {

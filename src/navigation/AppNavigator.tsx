@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform } from 'react-native';
-import { NavigationContainer, createNavigationContainerRef, CommonActions, StackActions } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef, CommonActions } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +19,7 @@ import ClientePacotesScreen from '../screens/ClientePacotesScreen';
 import VendaPacoteScreen from '../screens/VendaPacoteScreen';
 import AgendaScreen from '../screens/AgendaScreen';
 import AgendamentoFormScreen from '../screens/AgendamentoFormScreen';
+import CompromissoFormScreen from '../screens/CompromissoFormScreen';
 import FinanceiroScreen from '../screens/FinanceiroScreen';
 import ContaFormScreen from '../screens/ContaFormScreen';
 import CentroCustoScreen from '../screens/CentroCustoScreen';
@@ -42,23 +43,24 @@ const TAB_ROOT_SCREEN: Partial<Record<keyof TabParamList, keyof StackParamList>>
   FinanceiroTab: 'Financeiro',
 };
 
-// Volta para a tela-raiz do stack da aba atualmente focada (popToTop limpo,
-// sem deixar telas "mortas" empilhadas). Usado pelo botão "Sair" e pelo
-// clique na aba já focada.
+// Volta para a tela-raiz do stack da aba atualmente focada. Usado pelo botão
+// "Sair" e pelo clique na aba já focada. O reset com target garante que sobre
+// apenas a raiz, mesmo se o stack foi criado sem a tela-raiz (navegação cruzada).
 function irParaRaizDaAba() {
   if (!navigationRef.isReady()) return;
   const rootState = navigationRef.getRootState();
   const route = rootState?.routes?.[rootState?.index ?? -1];
   if (!route) return;
+  const tabName = route.name as keyof TabParamList;
+  const rootScreen = TAB_ROOT_SCREEN[tabName];
   const stackKey = (route as { state?: { key?: string } })?.state?.key;
-  if (stackKey) {
-    navigationRef.dispatch({ ...StackActions.popToTop(), target: stackKey });
-  } else {
-    const tabName = route.name as keyof TabParamList;
-    const rootScreen = TAB_ROOT_SCREEN[tabName];
-    if (rootScreen) {
-      navigationRef.dispatch(CommonActions.navigate({ name: tabName, params: { screen: rootScreen } }));
-    }
+  if (stackKey && rootScreen) {
+    navigationRef.dispatch({
+      ...CommonActions.reset({ index: 0, routes: [{ name: rootScreen }] }),
+      target: stackKey,
+    });
+  } else if (rootScreen) {
+    navigationRef.dispatch(CommonActions.navigate({ name: tabName, params: { screen: rootScreen } }));
   }
 }
 
@@ -79,48 +81,63 @@ function useStackScreenOptions(): NativeStackNavigationOptions {
 }
 
 function HomeSpeedDial({ bottomOffset = 0 }: { bottomOffset?: number }) {
+  // initial: false = ao criar o stack da aba preguiçosamente, mantém a
+  // tela-raiz da aba na base (sem isso "Sair"/voltar quebram).
   const actions: SpeedDialAction[] = [
     {
       key: 'novo-agendamento',
       icon: 'calendar',
       label: 'Novo Agendamento',
-      onPress: () => navigationRef.navigate('AgendaTab', { screen: 'AgendamentoForm', params: { agendamentoId: null } }),
+      onPress: () =>
+        navigationRef.navigate('AgendaTab', { screen: 'AgendamentoForm', params: { agendamentoId: null }, initial: false }),
+    },
+    {
+      key: 'novo-compromisso',
+      icon: 'lock-closed',
+      label: 'Novo Compromisso',
+      onPress: () =>
+        navigationRef.navigate('AgendaTab', { screen: 'CompromissoForm', params: { compromissoId: null }, initial: false }),
     },
     {
       key: 'cadastrar-cliente',
       icon: 'person-add',
       label: 'Cadastrar Cliente',
-      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null } }),
+      onPress: () =>
+        navigationRef.navigate('ClientesTab', { screen: 'ClienteForm', params: { clienteId: null }, initial: false }),
     },
     {
       key: 'vender-pacote',
       icon: 'gift',
       label: 'Vender Pacote',
-      onPress: () => navigationRef.navigate('ClientesTab', { screen: 'VendaPacote', params: { clienteId: null } }),
+      onPress: () =>
+        navigationRef.navigate('ClientesTab', { screen: 'VendaPacote', params: { clienteId: null }, initial: false }),
     },
     {
       key: 'servicos',
       icon: 'cut',
       label: 'Serviços & Pacotes',
-      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'servicos' } }),
+      onPress: () =>
+        navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'servicos' }, initial: false }),
     },
     {
       key: 'produtos',
       icon: 'bag-handle',
       label: 'Produtos',
-      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'produtos' } }),
+      onPress: () =>
+        navigationRef.navigate('DashboardTab', { screen: 'Servicos', params: { modo: 'produtos' }, initial: false }),
     },
     {
       key: 'nova-conta',
       icon: 'wallet',
       label: 'Nova Conta',
-      onPress: () => navigationRef.navigate('FinanceiroTab', { screen: 'ContaForm', params: { contaId: null } }),
+      onPress: () =>
+        navigationRef.navigate('FinanceiroTab', { screen: 'ContaForm', params: { contaId: null }, initial: false }),
     },
     {
       key: 'categorias',
       icon: 'pricetags',
       label: 'Categorias',
-      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'CentroCusto' }),
+      onPress: () => navigationRef.navigate('DashboardTab', { screen: 'CentroCusto', initial: false }),
     },
   ];
 
@@ -150,6 +167,11 @@ function AgendaStack() {
     <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen name="Agenda" component={AgendaScreen} options={{ title: 'Agenda', headerRight: () => null }} />
       <Stack.Screen name="AgendamentoForm" component={AgendamentoFormScreen} />
+      <Stack.Screen
+        name="CompromissoForm"
+        component={CompromissoFormScreen}
+        options={{ title: 'Novo Compromisso' }}
+      />
     </Stack.Navigator>
   );
 }

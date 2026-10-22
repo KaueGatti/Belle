@@ -262,6 +262,9 @@ Tokens: `spacing` (xs 4 … xl 32), `radius` (sm 8, md 14, lg 20, pill 999), `ty
    - Fix: adicionado press animation (Animated) e gradientes (`expo-linear-gradient`).
 4. **Nenhum retorno visual após ações CRUD.**
    - Fix: sistema de `Toast` global + chamadas `useToast().showToast(...)` em todos os formulários e no Financeiro.
+5. **"Sair"/tabPress não voltavam à raiz da aba ao abrir telas via SpeedDial em abas nunca visitadas.**
+   - Causa: navegação cruzada `navigate('AgendaTab', { screen })` cria o stack da aba **preguiçosamente só com a tela alvo** (ex.: `[CompromissoForm]`, sem a raiz `Agenda`); o `popToTop` não tinha para onde voltar (ao empilhar outra tela, caía na órfã de baixo).
+   - Fix: `initial: false` em todas as navegações cruzadas entre abas + `irParaRaizDaAba()` trocando `popToTop` por `CommonActions.reset` com `target` (detalhes na sessão "Feature Compromissos + fix de navegação cruzada").
 
 ---
 
@@ -270,6 +273,7 @@ Tokens: `spacing` (xs 4 … xl 32), `radius` (sm 8, md 14, lg 20, pill 999), `ty
 - [ ] Notificações push para lembrar clientes de agendamentos. *(Notas: os lembretes locais atuais são para o aparelho da manicure; push para clientes exigiria backend e tokens.)*
 - [ ] Exportar relatórios financeiros (PDF/Excel).
 - [ ] Foto de perfil da cliente.
+- [x] **Compromissos**: cadastro de datas/horários indisponíveis para impedir agendamentos nesses períodos. ✔ (implementado — ver "Sessão: Feature Compromissos + fix de navegação cruzada")
 
 > **Sincronização em nuvem**: implementada em código (backup/import + Supabase com login Google).
 > Falta apenas configurar o projeto Supabase (URL/key + tabela `registros` + provider Google) —
@@ -675,3 +679,96 @@ Correções na navegação (todas em `.tsx`; fingerprint nativo intacto, só JS)
 
 ## Validação
 - `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK).
+
+---
+
+# Sessão: Desconto no agendamento
+
+Implementação de campo de desconto no formulário de agendamento, seguindo o padrão da venda de pacotes.
+
+## Arquivos alterados
+- **`src/types/entities.ts`** — novos campos `desconto?: number` e `tipoDesconto?: 'percent' | 'fixed'` na interface `Agendamento`.
+- **`src/screens/AgendamentoFormScreen.tsx`** — UI + lógica de desconto:
+  - Estados: `tipoDesconto`, `descontoTexto`, `erroDesconto`.
+  - Cálculo: `descontoValor` (useMemo) — percentual ou fixo; `valorFinalDescontado`.
+  - `valorAuto()` agora subtrai o desconto (serviços + produtos + adicional - desconto).
+  - UI: campo com `SegmentedControl` (% / R$) + input mascarado + card de resumo (total, desconto vermelho, total com desconto).
+  - Posição: logo após o campo "Adicional (valor extra)".
+  - Validação: desconto não pode ser maior que o valor total.
+  - Persistência: `desconto` e `tipoDesconto` salvos no agendamento; conta a receber gerada com valor já descontado.
+- **`src/context/DataContext.tsx`** — sem alteração (campos adicionais já são aceitos via `Partial<Omit<...>>`); a conta a receber é gerada com o `valor` já descontado (via `prepararDados().valor`).
+
+## Validação
+- `npx tsc --noEmit` (0 erros) + `npx expo export --platform android` (bundle OK, 1301 módulos).
+- EAS Update publicado: `a241ce3e-4ee4-4d25-b191-37f18e7e2706` (canal `preview`).
+
+---
+
+# Sessão: Feature Compromissos + fix de navegação cruzada
+
+Implementação dos **Compromissos** (blocos de horário indisponíveis da manicure) e correção do bug do
+botão **Sair**/tabPress que persistia ao abrir telas via SpeedDial em abas nunca visitadas.
+
+## Decisões de produto
+- **Sem recorrência** por enquanto (campo fica reservado para o futuro).
+- Conflito com compromisso **bloqueia** o salvamento do agendamento (mesmo padrão do conflito entre agendamentos).
+- **Sem notificações locais** para compromissos (escopo mínimo).
+
+## Fundação de dados
+- **`src/types/entities.ts`** — interface `Compromisso` (`{ id, titulo, data, horaInicio, horaFim, observacoes?, createdAt, updatedAt? }`) + `compromissos: Compromisso[]` em `DadosApp`.
+- **`src/utils/storage.ts`** — chave `COMPROMISSOS: '@manicure_app:compromissos'`.
+- **`src/context/DataContext.tsx`** — estado + load no `Promise.all` inicial + persistência (`hasLoaded`) + CRUD `add/update/delete/getCompromisso` (ids `cp`, prefixo `'cp'`) com `CompromissoInput` exportado + `restoreSnapshot`.
+- **`src/utils/backup.ts`** — `'compromissos'` em `DATA_KEYS`/`SNAPSHOT_KEYS`; **retrocompatibilidade**: `validateSnapshot` valida `SNAPSHOT_REQUIRED_KEYS` (sem compromissos) para aceitar backups antigos; `aplicarBackup` grava com fallback `[]`.
+- **`src/utils/sync.ts`** — `'compromissos'` em `ENTITIES`; **`SyncContext.tsx`** inclui no espelho (`localDados`).
+
+## Telas/navegação
+- **`src/screens/CompromissoFormScreen.tsx`** (nova) — título, data, início/fim, observações. Validações: título obrigatório; fim > início; sobreposição com outro compromisso do mesmo dia (erro inline). Exclusão com `Alert` + toasts ("Compromisso cadastrado/atualizado/excluído").
+- **`src/types/navigation.ts`** — rota `CompromissoForm: { compromissoId?: string | null } | undefined`.
+- **`src/navigation/AppNavigator.tsx`** — tela registrada no stack da Agenda; ação "Novo Compromisso" (ícone `lock-closed`) no SpeedDial global.
+- **`src/screens/AgendamentoFormScreen.tsx`** — `achaConflitoCompromisso()` verifica sobreposição `[hora, hora+duração)` × `[horaInicio, horaFim)` no mesmo dia; acionada em `handleDataChange`/`handleHoraChange`/`validar()`/`handleSalvar()`. Novo estado `conflitoCompromisso` + modal `ConflitoCompromissoModal` ("Horário indisponível", ícone cadeado). Salvamento bloqueado com erro `hora: 'Horário indisponível (compromisso)'`.
+- **`src/screens/AgendaScreen.js`** — compromissos entram nas seções por data junto dos agendamentos (ordenados por hora), respeitando filtro Próximos/Hoje/Todos. Card distinto: fundo `surfaceAlt`, borda tracejada, badge "Indisponível"; toque abre a edição.
+
+## Fix de navegação: stacks órfãos em navegação cruzada
+**Sintomas**: abrir uma tela via SpeedDial numa aba nunca visitada (ex.: Início → Novo Compromisso) deixava
+"Sair"/tabPress sem efeito; depois disso, "Sair" no AgendamentoForm voltava para a CompromissoForm.
+
+**Causa raiz**: `navigate('AgendaTab', { screen: 'CompromissoForm' })` cria o stack da aba
+**preguiçosamente apenas com a tela alvo** (`routes: [CompromissoForm]`, sem a raiz `Agenda`).
+Com pilha de 1 rota, `popToTop` não muda nada; ao empilhar outra tela por cima, `popToTop` cai na órfã de baixo.
+
+**Correção (2 camadas)**:
+1. **Origem** — `initial: false` em TODAS as navegações cruzadas entre abas: o stack passa a nascer com a
+   tela-raiz na base (`[Agenda, CompromissoForm]`). Pontos alterados: 8 ações do SpeedDial
+   (`AppNavigator.tsx`), `AgendamentoFormScreen.tsx` (2), `ClienteConsultaScreen.js` (2),
+   `ClienteHistoricoScreen.js` (2), `DashboardScreen.js` (1).
+2. **Defesa** — `irParaRaizDaAba()` trocou `StackActions.popToTop()` por
+   `CommonActions.reset({ index: 0, routes: [{ name: rootScreen }] })` com `target: stackKey`: reset
+   incondicional à raiz correta, mesmo em pilhas órfãs (deep link etc.). Import `StackActions` removido.
+
+**Referências verificadas na fonte v7 instalada**:
+`useNavigationBuilder.js:276,378` (honra `initial:false` na inicialização preguiçosa e empilha a tela alvo
+sobre a raiz) · `useOnAction.js:51` (ação com `target` é roteada direto ao navigator alvo) ·
+`BottomTabBar.js:272` (`tabPress` emite `target = route.key`, casando com nosso listener).
+
+### Nova regra de convenção
+> Toda navegação cruzada entre abas deve usar `initial: false` — garante a tela-raiz na base do stack
+> e faz o voltar físico do Android funcionar corretamente.
+
+## Lição operacional
+JS puro exige **reload/OTA antes de testar** no aparelho: o falso "continua quebrado" desta sessão foi
+bundle antigo (o app ainda rodava o JS anterior ao fix). Via Expo Go/Metro → fechar/reabrir o app ou `r`
+no Metro; via APK preview → publicar `npx eas update --channel preview --platform android` e abrir o app 2x.
+
+## Validação
+- `npx tsc --noEmit` (0 erros) · `node --check` nos `.js` alterados · `npx expo export --platform android` (bundle OK, 1302 módulos).
+- Fingerprint/runtime intactos (só JS mudou; OTA possível).
+
+---
+
+## Observações pendentes
+
+### 1. ~~Filtro por período definido e personalizado no Dashboard e no Financeiro~~ ✔ (implementado)
+### 2. ~~Compromissos~~ ✔ (implementado — ver "Sessão: Feature Compromissos + fix de navegação cruzada")
+- [x] Entidade `Compromisso` (sem recorrência por enquanto), tela `CompromissoFormScreen` no stack da Agenda, conflito bloqueante no `AgendamentoForm` e blocos visíveis na `AgendaScreen`.
+- [ ] Recorrência (ex.: repetir semanalmente) — futuro.
+- [ ] Notificações locais para compromissos — futuro.

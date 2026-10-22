@@ -1,0 +1,31 @@
+Preciso refazer o modal de novo orçamento no perfil do cliente.
+
+O layout será assim:
+
+2 seções um ao lado da outra: seção da esquerda (width = 30%), seção da direita (width = 70%).
+
+Seção da esquerda terá os seguintes campo:
+
+- Paciente (Select)
+- Descrição (Text)
+- Válido até (Date) | Status (Select)
+- Observações (TextArea)
+
+Seção da direita hávera outras 2 seções uma abaixo da outra:
+
+Seção 2.1: Procedimentos, tabela com os campos:
+
+- Procedimento (Select)
+- Valor Unit. (Moeda)
+- Desconto (Moeda|Decimal(Select: R$|%))
+- Qtd (Int)
+- Total (Moeda)
+- Observação (Text)
+- (Botão Delete)
+
+Depois do último registro um botão de adicionar procedimento
+
+Seção 2.2: Totalização, campos e labels:
+
+- "Subtotal (sem descontos)" R$XXX,XX
+- "Total de descontos" -R$XXX,XX

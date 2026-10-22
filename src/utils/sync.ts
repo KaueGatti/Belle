@@ -11,6 +11,7 @@ export const ENTITIES: (keyof DadosApp)[] = [
   'pacotes',
   'pacotesVendidos',
   'produtos',
+  'compromissos',
 ];
 
 const TABLE = 'registros';

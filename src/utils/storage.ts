@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
   PACOTES: '@manicure_app:pacotes',
   PACOTES_VENDIDOS: '@manicure_app:pacotes_vendidos',
   PRODUTOS: '@manicure_app:produtos',
+  COMPROMISSOS: '@manicure_app:compromissos',
   SEEDED: '@manicure_app:seeded_v1',
   NOTIFICACOES_ENABLED: '@manicure_app:notificacoes_enabled',
   SYNC_META: '@manicure_app:sync_meta',

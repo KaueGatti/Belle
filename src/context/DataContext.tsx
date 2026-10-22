@@ -18,6 +18,7 @@ import {
   PacoteItem,
   Produto,
   ProdutoItem,
+  Compromisso,
   DadosApp,
 } from '../types/entities';
 
@@ -28,6 +29,7 @@ type CentroCustoInput = Partial<Omit<CentroCusto, 'id' | 'createdAt' | 'updatedA
 type ServicoInput = Partial<Omit<Servico, 'id' | 'createdAt' | 'updatedAt'>>;
 type PacoteInput = Partial<Omit<Pacote, 'id' | 'createdAt' | 'updatedAt'>>;
 type ProdutoInput = Partial<Omit<Produto, 'id' | 'createdAt' | 'updatedAt'>>;
+export type CompromissoInput = Partial<Omit<Compromisso, 'id' | 'createdAt' | 'updatedAt'>>;
 
 const DataContext = createContext<DataContextValue | null>(null);
 
@@ -49,13 +51,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [pacotes, setPacotes] = useState<Pacote[]>([]);
   const [pacotesVendidos, setPacotesVendidos] = useState<PacoteVendido[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [compromissos, setCompromissos] = useState<Compromisso[]>([]);
 
   const hasLoaded = useRef(false);
 
   // Carrega dados persistidos na inicialização
   useEffect(() => {
     (async () => {
-      const [c, a, f, cc, seeded, sv, pc, pv, pr] = await Promise.all([
+      const [c, a, f, cc, seeded, sv, pc, pv, pr, cp] = await Promise.all([
         loadItem<Cliente[]>(STORAGE_KEYS.CLIENTES, []),
         loadItem<Agendamento[]>(STORAGE_KEYS.AGENDAMENTOS, []),
         loadItem<Conta[]>(STORAGE_KEYS.CONTAS, []),
@@ -65,6 +68,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         loadItem<Pacote[]>(STORAGE_KEYS.PACOTES, []),
         loadItem<PacoteVendido[]>(STORAGE_KEYS.PACOTES_VENDIDOS, []),
         loadItem<Produto[]>(STORAGE_KEYS.PRODUTOS, []),
+        loadItem<Compromisso[]>(STORAGE_KEYS.COMPROMISSOS, []),
       ]);
 
       setClientes(c);
@@ -74,6 +78,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setPacotes(pc);
       setPacotesVendidos(pv);
       setProdutos(pr);
+      setCompromissos(cp);
 
       if (!seeded && cc.length === 0) {
         setCentrosCusto(CENTROS_PADRAO);
@@ -120,6 +125,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (hasLoaded.current) saveItem(STORAGE_KEYS.PRODUTOS, produtos);
   }, [produtos]);
+
+  useEffect(() => {
+    if (hasLoaded.current) saveItem(STORAGE_KEYS.COMPROMISSOS, compromissos);
+  }, [compromissos]);
 
   // ---------- Clientes ----------
   function addCliente(data: ClienteInput): Cliente {
@@ -555,6 +564,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return true;
   }
 
+  // ---------- Compromissos ----------
+  function addCompromisso(data: CompromissoInput): Compromisso {
+    const novo = { id: generateId('cp'), createdAt: Date.now(), updatedAt: Date.now(), ...data } as Compromisso;
+    setCompromissos((prev) => [novo, ...prev]);
+    return novo;
+  }
+  function updateCompromisso(id: string, data: CompromissoInput) {
+    setCompromissos((prev) => prev.map((c) => (c.id === id ? { ...c, ...data, updatedAt: Date.now() } : c)));
+  }
+  function deleteCompromisso(id: string) {
+    setCompromissos((prev) => prev.filter((c) => c.id !== id));
+  }
+  function getCompromisso(id: string): Compromisso | null {
+    return compromissos.find((c) => c.id === id) || null;
+  }
+
   // Substitui todos os dados de uma vez (usado no import de backup e no sync)
   function restoreSnapshot(dados: Partial<DadosApp> | null | undefined) {
     const fallback: [] = [];
@@ -566,6 +591,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setPacotes(Array.isArray(dados?.pacotes) ? dados.pacotes : fallback);
     setPacotesVendidos(Array.isArray(dados?.pacotesVendidos) ? dados.pacotesVendidos : fallback);
     setProdutos(Array.isArray(dados?.produtos) ? dados.produtos : fallback);
+    setCompromissos(Array.isArray(dados?.compromissos) ? dados.compromissos : fallback);
   }
 
   const value: DataContextValue = {
@@ -578,6 +604,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     pacotes,
     pacotesVendidos,
     produtos,
+    compromissos,
     restoreSnapshot,
     addCliente,
     updateCliente,
@@ -630,6 +657,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     baixarEstoqueProdutos,
     restaurarEstoqueProdutos,
     venderProduto,
+    addCompromisso,
+    updateCompromisso,
+    deleteCompromisso,
+    getCompromisso,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
@@ -645,6 +676,7 @@ export interface DataContextValue {
   pacotes: Pacote[];
   pacotesVendidos: PacoteVendido[];
   produtos: Produto[];
+  compromissos: Compromisso[];
   restoreSnapshot: (dados: Partial<DadosApp> | null | undefined) => void;
   addCliente: (data: ClienteInput) => Cliente;
   updateCliente: (id: string, data: ClienteInput) => void;
@@ -697,6 +729,10 @@ export interface DataContextValue {
   baixarEstoqueProdutos: (itens: ProdutoItem[]) => void;
   restaurarEstoqueProdutos: (itens: ProdutoItem[]) => void;
   venderProduto: (clienteId: string, itens: ProdutoItem[], opcoes?: { dataVenda?: string; valorPago?: number; dataRecebimento?: string }) => boolean;
+  addCompromisso: (data: CompromissoInput) => Compromisso;
+  updateCompromisso: (id: string, data: CompromissoInput) => void;
+  deleteCompromisso: (id: string) => void;
+  getCompromisso: (id: string) => Compromisso | null;
 }
 
 export function useData(): DataContextValue {

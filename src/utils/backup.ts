@@ -9,6 +9,7 @@ import type {
   BackupSnapshot,
   CentroCusto,
   Cliente,
+  Compromisso,
   Conta,
   DadosApp,
   Pacote,
@@ -28,6 +29,7 @@ const DATA_KEYS: StorageKey[] = [
   STORAGE_KEYS.PACOTES,
   STORAGE_KEYS.PACOTES_VENDIDOS,
   STORAGE_KEYS.PRODUTOS,
+  STORAGE_KEYS.COMPROMISSOS,
 ];
 
 const SNAPSHOT_KEYS: (keyof DadosApp)[] = [
@@ -39,11 +41,16 @@ const SNAPSHOT_KEYS: (keyof DadosApp)[] = [
   'pacotes',
   'pacotesVendidos',
   'produtos',
+  'compromissos',
 ];
+
+// Chaves obrigatórias na validação. 'compromissos' é opcional para aceitar
+// backups antigos gerados antes da entidade existir.
+const SNAPSHOT_REQUIRED_KEYS: (keyof DadosApp)[] = SNAPSHOT_KEYS.filter((k) => k !== 'compromissos');
 
 // Monta o snapshot completo com todos os dados locais
 export async function collectSnapshot(): Promise<BackupSnapshot> {
-  const [clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos] =
+  const [clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos, compromissos] =
     await Promise.all([
       loadItem<Cliente[]>(STORAGE_KEYS.CLIENTES, []),
       loadItem<Agendamento[]>(STORAGE_KEYS.AGENDAMENTOS, []),
@@ -53,11 +60,12 @@ export async function collectSnapshot(): Promise<BackupSnapshot> {
       loadItem<Pacote[]>(STORAGE_KEYS.PACOTES, []),
       loadItem<PacoteVendido[]>(STORAGE_KEYS.PACOTES_VENDIDOS, []),
       loadItem<Produto[]>(STORAGE_KEYS.PRODUTOS, []),
+      loadItem<Compromisso[]>(STORAGE_KEYS.COMPROMISSOS, []),
     ]);
   return {
     versao: BACKUP_VERSION,
     exportadoEm: new Date().toISOString(),
-    dados: { clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos },
+    dados: { clientes, agendamentos, contas, centrosCusto, servicos, pacotes, pacotesVendidos, produtos, compromissos },
   };
 }
 
@@ -98,7 +106,7 @@ export function validateSnapshot(snapshot: unknown): snapshot is BackupSnapshot 
   if (!snapshot || typeof snapshot !== 'object') return false;
   const dados = (snapshot as { dados?: unknown }).dados;
   if (!dados) return false;
-  return SNAPSHOT_KEYS.every((k) => Array.isArray((dados as Partial<DadosApp>)[k]));
+  return SNAPSHOT_REQUIRED_KEYS.every((k) => Array.isArray((dados as Partial<DadosApp>)[k]));
 }
 
 // Grava o backup de volta no AsyncStorage (a UI/contexto recarrega depois)
@@ -107,7 +115,7 @@ export async function aplicarBackup(snapshot: BackupSnapshot): Promise<void> {
     throw new Error('Arquivo de backup inválido');
   }
   await Promise.all(
-    DATA_KEYS.map((k, i) => saveItem(k, snapshot.dados[SNAPSHOT_KEYS[i]]))
+    DATA_KEYS.map((k, i) => saveItem(k, snapshot.dados[SNAPSHOT_KEYS[i]] ?? []))
   );
 }
 
