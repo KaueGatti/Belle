@@ -114,6 +114,7 @@ npx eas build -p android --profile preview   # gera o APK com tudo embutido
 |---|---|---|
 | "Supabase não configurado" | URL/key vazias no `supabase.js` | Preencher (Passo 5) e rebuild |
 | Login abre mas volta com erro | Redirect fora da allowlist | Adicionar `manicureapp://` (Passo 4) |
+| "Resposta do Google inválida" | Retorno do OAuth sem `code` nem tokens (redirect/URL errada) | O Alert mostra a URL completa de retorno; conferir Redirect URLs (Passo 4) e o log `[GoogleLogin]` |
 | `invalid code_verifier` | Falta polyfill de crypto | O `App.js` já inclui; rebuild |
 | Nada sincroniza ao logar | RLS/política não criada | Rodar o `supabase.sql` de novo (Passo 2) |
 | "Provider desabilitado" | Google não habilitado | Ativar toggle no Passo 3 |

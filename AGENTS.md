@@ -772,3 +772,51 @@ no Metro; via APK preview → publicar `npx eas update --channel preview --platf
 - [x] Entidade `Compromisso` (sem recorrência por enquanto), tela `CompromissoFormScreen` no stack da Agenda, conflito bloqueante no `AgendamentoForm` e blocos visíveis na `AgendaScreen`.
 - [ ] Recorrência (ex.: repetir semanalmente) — futuro.
 - [ ] Notificações locais para compromissos — futuro.
+
+---
+
+# Última Sessão (atual) — Fix do login Google ("Resposta do Google inválida")
+
+## Problema
+Ao tocar em "Entrar com Google" (Configurações), o fluxo voltava com **"Resposta do Google inválida"**
+(throw antigo quando `queryParams.code` estava vazio em `src/utils/supabase.ts`).
+
+## Causa raiz
+A `signInWithGoogle()` montava a URL de autorização **manualmente**
+(`/auth/v1/authorize?provider=google&redirect_to=...&scopes=email+profile`) **sem** os parâmetros
+PKCE (`code_challenge`/`code_challenge_method`). Sem eles, o `/authorize` do Supabase usa o
+**fluxo implícito**: o retorno traz `access_token`/`refresh_token` no **fragmento** da URL
+(`#access_token=...`) e **não** `?code=` na query — e `Linking.parse()` não lê fragmento.
+Logo `queryParams.code` era `undefined` → o erro. O polyfill de `crypto` (PKCE) do `App.tsx` era
+inútil nesse cenário e o `exchangeCodeForSession` nunca receberia um código válido.
+
+## Correção (`src/utils/supabase.ts`)
+- `signInWithGoogle()` usa **`supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo, scopes: 'email profile', skipBrowserRedirect: true } })`**:
+  a lib gera o `code_verifier` (usa o polyfill `crypto.getRandomValues` do `App.tsx`), salva no
+  AsyncStorage (`sb-<ref>-auth-token-code-verifier`) e devolve `data.url` com o `code_challenge`
+  (verificado na fonte instalada: `auth-js` `_getCodeChallengeAndMethod` + `_exchangeCodeForSession`).
+- `data.url` é aberto com `WebBrowser.openAuthSessionAsync(url, redirectTo)` (redirect continua
+  `manicureapp://` no APK; allowlist do Supabase segue válida).
+- **Parse manual** da URL de retorno (query `?...` **e** fragmento `#...`), sem `Linking.parse`
+  (import de `expo-linking` removido).
+- **Fluxo PKCE**: `?code=` → `exchangeCodeForSession(code)`. **Fallback implícito**: tokens no
+  fragmento → `setSession({ access_token, refresh_token })`.
+- **Log completo** em todas as etapas (`console.log/error` com prefixo `[GoogleLogin]`): redirectTo,
+  URL de autorização, resultado do navegador (JSON), URL de retorno bruta, query params, fragmento
+  e erros de `exchangeCodeForSession`/`setSession`. As mensagens de exceção incluem a URL completa
+  de retorno (ex.: `Resposta do Google inválida: retorno sem code nem tokens. URL completa: ...`).
+
+## Feedback na tela (`src/screens/SettingsScreen.js`)
+- `handleLogin`: além do toast curto ("Falha no login"), exibe **`Alert.alert('Falha no login com
+  Google', mensagem completa)`** — o toast dura 2,6s e corta textos longos; o Alert mostra o erro
+  inteiro (incluindo a URL de retorno) para diagnóstico.
+
+## Checklist de configuração (não é código)
+- Supabase → **Authentication → URL Configuration → Redirect URLs**: `manicureapp://` (APK) e o
+  `exp://...` atual do Expo Go (se testar nele).
+- **Authentication → Providers → Google** habilitado com Client ID/Secret.
+- `SUPABASE_SETUP.md`: nova linha na tabela de solução de problemas.
+
+## Validação
+- `npx tsc --noEmit` (0 erros) · `node --check` no `SettingsScreen.js` · `npx expo export
+  --platform android` (bundle OK, 4,03 MB). Fingerprint/runtime intactos (só JS; OTA possível).

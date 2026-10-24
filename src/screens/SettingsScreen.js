@@ -180,7 +180,9 @@ export default function SettingsScreen() {
       await signInWithGoogle();
       showToast('Conectado');
     } catch (e) {
-      showToast(e?.message || 'Falha no login', 'error');
+      console.error('[GoogleLogin] Falha no login:', e);
+      showToast('Falha no login', 'error');
+      Alert.alert('Falha no login com Google', e?.message || String(e));
     } finally {
       setEntrando(false);
     }

@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="5100" viewBox="0 0 1560 5100" font-family="Segoe UI, Arial, sans-serif">
+<title>Belle — Mapa de UI/UX (todas as telas)</title>
+<defs>
+<linearGradient id="gPa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A64D6B"/><stop offset="1" stop-color="#C9974C"/></linearGradient>
+<linearGradient id="gBtn" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#A64D6B"/><stop offset="1" stop-color="#C9974C"/></linearGradient>
+<style>
+text{fill:#2E2126}
+.w{fill:#FFFFFF}.s{fill:#8A7480}.bgw{fill:#FFF9FB}
+.pk{fill:#3E8E64}.wr{fill:#C97B2E}.dg{fill:#B23A48}.inf{fill:#5B7DB1}.pp{fill:#A64D6B}
+.name{font-size:17px;font-weight:700}.desc{font-size:11.5px;fill:#8A7480}
+.st{font-size:12.5px;font-weight:700}.f{font-size:11.5px}.b{font-weight:600}
+.lbl{font-size:8.5px;fill:#8A7480;font-weight:700;letter-spacing:0.4px}
+.tiny{font-size:9.5px;fill:#8A7480}
+</style>
+<g id="phone">
+<rect width="340" height="700" rx="30" fill="#3A2A30"/>
+<rect x="4" y="4" width="332" height="692" rx="26" fill="#FFF9FB"/>
+<text x="24" y="26" font-size="10.5" font-weight="700">9:41</text>
+<rect x="270" y="15" width="15" height="9" rx="2" fill="none" stroke="#2E2126"/>
+<rect x="272" y="17" width="8" height="5" rx="1" fill="#2E2126"/>
+<circle cx="298" cy="19.5" r="3.6" fill="none" stroke="#2E2126"/>
+<rect x="306" y="16" width="3" height="7" rx="1" fill="#2E2126"/>
+<rect x="148" y="9" width="44" height="12" rx="6" fill="#3A2A30"/>
+</g>
+<g id="icHome"><path d="M-7 3 L0 -3.5 L7 3 M-5 1.2 V9 H5 V1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="icCal"><rect x="-6.5" y="-3.5" width="13" height="11" rx="2" fill="none"/><path d="M-6.5 0.5 H6.5 M-3 -6.5 v3 M3 -6.5 v3" fill="none" stroke-linecap="round"/></g>
+<g id="icUser"><circle cx="0" cy="-3.2" r="3.2" fill="none"/><path d="M-6.2 8.5 Q0 1.5 6.2 8.5" fill="none" stroke-linecap="round"/></g>
+<g id="icFin"><circle cx="0" cy="1" r="7.2" fill="none"/><path d="M0 -3.5 V5.5 M-2.6 -1 Q0 -3 2.6 -1 Q0 1 -2.6 2.6 Q0 4.6 2.6 2.8" fill="none" stroke-linecap="round"/></g>
+<g id="tb">
+<rect x="4" y="636" width="332" height="60" fill="#FFFFFF"/>
+<line x1="4" y1="636" x2="336" y2="636" stroke="#F1E2E8"/>
+<g stroke="#BBA7B0" stroke-width="1.6" fill="none">
+<use href="#icHome" x="45" y="663"/><use href="#icCal" x="128" y="663"/><use href="#icUser" x="211" y="663"/><use href="#icFin" x="294" y="663"/>
+</g>
+<g fill="#8A7480" font-size="9.5" font-weight="600" text-anchor="middle">
+<text x="45" y="688">Início</text><text x="128" y="688">Agenda</text><text x="211" y="688">Clientes</text><text x="294" y="688">Financeiro</text>
+</g>
+</g>
+<g id="ta1"><g stroke="#A64D6B" stroke-width="1.8" fill="none"><use href="#icHome" x="45" y="663"/></g><text x="45" y="688" text-anchor="middle" font-size="9.5" font-weight="700" class="pp">Início</text></g>
+<g id="ta2"><g stroke="#A64D6B" stroke-width="1.8" fill="none"><use href="#icCal" x="128" y="663"/></g><text x="128" y="688" text-anchor="middle" font-size="9.5" font-weight="700" class="pp">Agenda</text></g>
+<g id="ta3"><g stroke="#A64D6B" stroke-width="1.8" fill="none"><use href="#icUser" x="211" y="663"/></g><text x="211" y="688" text-anchor="middle" font-size="9.5" font-weight="700" class="pp">Clientes</text></g>
+<g id="ta4"><g stroke="#A64D6B" stroke-width="1.8" fill="none"><use href="#icFin" x="294" y="663"/></g><text x="294" y="688" text-anchor="middle" font-size="9.5" font-weight="700" class="pp">Financeiro</text></g>
+<g id="fab"><circle cx="46" cy="604" r="24" fill="url(#gPa)"/><g stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round"><line x1="37" y1="597" x2="55" y2="597"/><line x1="37" y1="604" x2="55" y2="604"/><line x1="37" y1="611" x2="55" y2="611"/></g></g>
+<g id="inp"><rect width="312" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/></g>
+<g id="btnSave"><rect width="312" height="44" rx="12" fill="url(#gBtn)"/><text x="156" y="27" text-anchor="middle" font-size="14" font-weight="700" class="w">Salvar</text></g>
+<g id="gear"><circle r="6" fill="none" stroke="#FFFFFF" stroke-width="1.8"/><g stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"><line y1="-9" y2="-6"/><line y1="6" y2="9"/><line x1="-9" x2="-6"/><line x1="6" x2="9"/></g></g>
+<g id="logo"><circle r="16" fill="url(#gPa)"/><circle r="20" fill="none" stroke="#C9974C" stroke-width="1.5" opacity="0.9"/><path d="M-5 4.5 Q-2 -6 5.5 -5 Q1 -2.5 2 4 Q-1 6.5 -5 4.5 Z" fill="#FFFFFF" opacity="0.95"/></g>
+<g id="hdrBack"><path d="M22 50 L15 58 L22 66" fill="none" stroke="#2E2126" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="hdrSair"><text x="324" y="63" text-anchor="end" font-size="12" font-weight="700" class="pp">Sair</text></g>
+<g id="hdrLine"><line x1="10" y1="84" x2="330" y2="84" stroke="#F1E2E8"/></g>
+<g id="sw"><rect width="40" height="22" rx="11" fill="#A64D6B"/><circle cx="29" cy="11" r="8" fill="#FFFFFF"/></g>
+<g id="check"><circle r="8" fill="#3E8E64"/><path d="M-3.5 0.5 L-1 3 L3.5 -2.5" fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="trash"><path d="M-5.5 -3.5 H5.5 M-3.2 -3.5 V-6 H3.2 V-3.5 M-4.6 -3.5 L-3.8 6.5 H3.8 L4.6 -3.5 M-1.6 -1 V3.5 M1.6 -1 V3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="lock"><rect x="-5" y="-1.5" width="10" height="8" rx="2" fill="none"/><path d="M-3 -1.5 V-4 a3 3 0 0 1 6 0 V-1.5" fill="none"/></g>
+<g id="chev"><path d="M0 -4.5 L4.5 0 L0 4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="av"><circle r="16" fill="#F5DCE4"/><circle cy="-4" r="5.5" fill="#C9974C" opacity="0.85"/><path d="M-9 11 Q0 1 9 11" fill="#C9974C" opacity="0.85"/></g>
+</defs>
+<rect x="30" y="26" width="1500" height="104" rx="20" fill="url(#gPa)"/>
+<text x="56" y="72" font-size="25" font-weight="800" class="w">Belle — Mapa de UI/UX · todas as telas</text>
+<text x="56" y="97" font-size="12.5" class="w" opacity="0.92">App de gestão para manicures autônomas · React Native + Expo · 21 telas + SpeedDial, modal e estados vazios</text>
+<text x="30" y="154" font-size="10.5" font-weight="700">Paleta do tema:</text>
+<g font-size="9.5" class="s">
+<rect x="100" y="142" width="16" height="16" rx="4" fill="#A64D6B"/><text x="122" y="154">primary</text>
+<rect x="186" y="142" width="16" height="16" rx="4" fill="#C9974C"/><text x="208" y="154">accent</text>
+<rect x="270" y="142" width="16" height="16" rx="4" fill="#FFF9FB" stroke="#EEDEE4"/><text x="292" y="154">background</text>
+<rect x="384" y="142" width="16" height="16" rx="4" fill="#FBEFF2" stroke="#EEDEE4"/><text x="406" y="154">surfaceAlt</text>
+<rect x="486" y="142" width="16" height="16" rx="4" fill="#3E8E64"/><text x="508" y="154">success</text>
+<rect x="572" y="142" width="16" height="16" rx="4" fill="#C97B2E"/><text x="594" y="154">warning</text>
+<rect x="666" y="142" width="16" height="16" rx="4" fill="#B23A48"/><text x="688" y="154">danger</text>
+<rect x="750" y="142" width="16" height="16" rx="4" fill="#5B7DB1"/><text x="772" y="154">info</text>
+</g>
+<text x="30" y="176" font-size="10" class="s">4 abas-raiz com barra inferior fixa · telas empilhadas com botão "Sair" · FAB em leque (SpeedDial) global em todas as telas · valores fictícios</text>
+<g transform="translate(30,200)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Início</text>
+<use href="#gear" x="304" y="58"/>
+<use href="#hdrLine"/>
+<g font-size="9.5" font-weight="600" text-anchor="middle">
+<rect x="14" y="94" width="44" height="24" rx="12" fill="url(#gBtn)"/><text x="36" y="109" class="w">Todos</text>
+<rect x="64" y="94" width="42" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="85" y="109" class="s">Hoje</text>
+<rect x="112" y="94" width="84" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="154" y="109" class="s">Essa Semana</text>
+<rect x="202" y="94" width="68" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="236" y="109" class="s">Esse Mês</text>
+<rect x="276" y="94" width="50" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="301" y="109" class="s">Período</text>
+</g>
+<rect x="14" y="128" width="312" height="112" rx="16" fill="url(#gPa)"/>
+<use href="#logo" x="48" y="174"/>
+<text x="78" y="170" font-size="19" font-weight="800" class="w">Belle</text>
+<text x="78" y="188" font-size="9.5" class="w" opacity="0.92">Agenda, clientes e finanças</text>
+<rect x="252" y="142" width="58" height="20" rx="10" fill="#FFFFFF" opacity="0.25"/>
+<text x="281" y="155" text-anchor="middle" font-size="9" font-weight="700" class="w">3 hoje</text>
+<g>
+<rect x="14" y="252" width="98" height="56" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="26" y="270" class="lbl">A RECEBER</text><text x="26" y="292" font-size="12.5" font-weight="800" class="pk">R$ 1.250</text>
+<rect x="121" y="252" width="98" height="56" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="133" y="270" class="lbl">A PAGAR</text><text x="133" y="292" font-size="12.5" font-weight="800" class="wr">R$ 380</text>
+<rect x="228" y="252" width="98" height="56" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="240" y="270" class="lbl">SALDO</text><text x="240" y="292" font-size="12.5" font-weight="800" class="pk">+ R$ 870</text>
+</g>
+<g text-anchor="middle">
+<rect x="14" y="318" width="98" height="48" rx="12" fill="#F5DCE4"/>
+<text x="63" y="340" font-size="13" font-weight="800" class="pp">24</text><text x="63" y="355" font-size="8.5" font-weight="600" class="pp">clientes</text>
+<rect x="121" y="318" width="98" height="48" rx="12" fill="#F5DCE4"/>
+<text x="170" y="340" font-size="13" font-weight="800" class="pp">3</text><text x="170" y="355" font-size="8.5" font-weight="600" class="pp">hoje</text>
+<rect x="228" y="318" width="98" height="48" rx="12" fill="#FBEBDA"/>
+<text x="277" y="340" font-size="13" font-weight="800" class="wr">5</text><text x="277" y="355" font-size="8.5" font-weight="600" class="wr">pendências</text>
+</g>
+<text x="14" y="392" class="st">Próximos agendamentos</text>
+<rect x="14" y="402" width="312" height="60" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="413" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="435" text-anchor="middle" font-size="9.5" font-weight="700" class="w">14:00</text>
+<text x="68" y="425" font-size="11.5" font-weight="600">Maria Silva</text>
+<text x="68" y="441" font-size="9.5" class="s">Manicure + Pedicure · R$ 85</text>
+<rect x="252" y="415" width="64" height="18" rx="9" fill="#F5DCE4"/><text x="284" y="427" text-anchor="middle" font-size="8.5" font-weight="700" class="pp">Agendado</text>
+<rect x="14" y="470" width="312" height="60" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="481" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="503" text-anchor="middle" font-size="9.5" font-weight="700" class="w">16:30</text>
+<text x="68" y="493" font-size="11.5" font-weight="600">Ana Souza</text>
+<text x="68" y="509" font-size="9.5" class="s">Alongamento · R$ 90</text>
+<rect x="252" y="483" width="64" height="18" rx="9" fill="#E1F1E7"/><text x="284" y="495" text-anchor="middle" font-size="8.5" font-weight="700" class="pk">Concluído</text>
+<rect x="14" y="538" width="312" height="60" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="549" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="571" text-anchor="middle" font-size="9.5" font-weight="700" class="w">09:00</text>
+<text x="68" y="561" font-size="11.5" font-weight="600">Juliana Costa</text>
+<text x="68" y="577" font-size="9.5" class="s">Spa dos pés · R$ 60</text>
+<rect x="252" y="551" width="64" height="18" rx="9" fill="#F8E2E3"/><text x="284" y="563" text-anchor="middle" font-size="8.5" font-weight="700" class="dg">Cancelado</text>
+<use href="#fab"/><use href="#tb"/><use href="#ta1"/>
+</g>
+<text x="200" y="916" text-anchor="middle" class="name">Dashboard (Início)</text>
+<text x="200" y="936" text-anchor="middle" class="desc">Hero com logo e engrenagem, filtro de período, resumo financeiro, QuickStats e próximos agendamentos</text>
+<g transform="translate(410,200)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Agenda</text>
+<use href="#hdrLine"/>
+<g font-size="9.5" font-weight="600" text-anchor="middle">
+<rect x="14" y="94" width="110" height="24" rx="12" fill="url(#gBtn)"/><text x="69" y="109" class="w">Próximos 7 dias</text>
+<rect x="132" y="94" width="48" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="156" y="109" class="s">Hoje</text>
+<rect x="188" y="94" width="52" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="214" y="109" class="s">Todos</text>
+</g>
+<text x="14" y="142" class="lbl">HOJE · SEG, 05/08</text>
+<rect x="14" y="150" width="312" height="58" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="160" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="182" text-anchor="middle" font-size="9.5" font-weight="700" class="w">09:00</text>
+<text x="68" y="172" font-size="11.5" font-weight="600">Juliana Costa</text>
+<text x="68" y="188" font-size="9.5" class="s">Spa dos pés · R$ 60</text>
+<rect x="252" y="163" width="64" height="18" rx="9" fill="#F5DCE4"/><text x="284" y="175" text-anchor="middle" font-size="8.5" font-weight="700" class="pp">Agendado</text>
+<rect x="14" y="216" width="312" height="54" rx="12" fill="#FBEFF2" stroke="#C9974C" stroke-dasharray="5 4"/>
+<g stroke="#C97B2E" stroke-width="1.5" fill="none"><use href="#lock" x="34" y="243"/></g>
+<text x="52" y="239" font-size="11.5" font-weight="600">Almoço</text>
+<text x="52" y="255" font-size="9.5" class="s">12:00 – 13:00</text>
+<rect x="238" y="231" width="78" height="18" rx="9" fill="#FBEBDA"/><text x="277" y="243" text-anchor="middle" font-size="8.5" font-weight="700" class="wr">Indisponível</text>
+<text x="14" y="296" class="lbl">TER, 06/08</text>
+<rect x="14" y="304" width="312" height="58" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="314" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="336" text-anchor="middle" font-size="9.5" font-weight="700" class="w">14:00</text>
+<text x="68" y="326" font-size="11.5" font-weight="600">Maria Silva</text>
+<text x="68" y="342" font-size="9.5" class="s">Manicure + Pedicure · R$ 85</text>
+<rect x="252" y="317" width="64" height="18" rx="9" fill="#F5DCE4"/><text x="284" y="329" text-anchor="middle" font-size="8.5" font-weight="700" class="pp">Agendado</text>
+<rect x="14" y="370" width="312" height="58" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="380" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="402" text-anchor="middle" font-size="9.5" font-weight="700" class="w">17:00</text>
+<text x="68" y="392" font-size="11.5" font-weight="600">Patrícia Lima</text>
+<text x="68" y="408" font-size="9.5" class="s">Alongamento · R$ 90</text>
+<rect x="252" y="383" width="64" height="18" rx="9" fill="#F8E2E3"/><text x="284" y="395" text-anchor="middle" font-size="8.5" font-weight="700" class="dg">Cancelado</text>
+<use href="#fab"/><use href="#tb"/><use href="#ta2"/>
+</g>
+<text x="580" y="916" text-anchor="middle" class="name">Agenda</text>
+<text x="580" y="936" text-anchor="middle" class="desc">Lista por data com filtros, blocos de compromisso (indisponível) e badges de status</text>
+<g transform="translate(790,200)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Clientes</text>
+<use href="#hdrLine"/>
+<rect x="14" y="94" width="312" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/>
+<circle cx="34" cy="114" r="6" fill="none" stroke="#8A7480" stroke-width="1.5"/>
+<line x1="38" y1="118" x2="43" y2="123" stroke="#8A7480" stroke-width="1.5" stroke-linecap="round"/>
+<text x="52" y="118" font-size="10.5" class="s">Buscar por nome ou telefone</text>
+<rect x="14" y="150" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="172" font-size="11.5" font-weight="600">Maria Silva</text><text x="28" y="188" font-size="9.5" class="s">(11) 98888-1234</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="177"/></g>
+<rect x="14" y="212" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="234" font-size="11.5" font-weight="600">Ana Souza</text><text x="28" y="250" font-size="9.5" class="s">(11) 97777-4321</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="239"/></g>
+<rect x="14" y="274" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="296" font-size="11.5" font-weight="600">Juliana Costa</text><text x="28" y="312" font-size="9.5" class="s">(21) 96666-9876</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="301"/></g>
+<rect x="14" y="336" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="358" font-size="11.5" font-weight="600">Patrícia Lima</text><text x="28" y="374" font-size="9.5" class="s">(11) 95555-1122</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="363"/></g>
+<rect x="14" y="398" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="420" font-size="11.5" font-weight="600">Renata Alves</text><text x="28" y="436" font-size="9.5" class="s">(31) 94444-5566</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="425"/></g>
+<use href="#fab"/><use href="#tb"/><use href="#ta3"/>
+</g>
+<text x="960" y="916" text-anchor="middle" class="name">Clientes</text>
+<text x="960" y="936" text-anchor="middle" class="desc">Lista com busca por nome ou telefone; o toque abre a ficha da cliente</text>
+<g transform="translate(1170,200)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Financeiro</text>
+<use href="#hdrLine"/>
+<rect x="14" y="94" width="312" height="36" rx="10" fill="#F5DCE4"/>
+<rect x="14" y="94" width="156" height="36" rx="10" fill="#A64D6B"/>
+<text x="92" y="116" text-anchor="middle" font-size="11" font-weight="700" class="w">A Receber</text>
+<text x="238" y="116" text-anchor="middle" font-size="11" font-weight="700" class="pp">A Pagar</text>
+<g font-size="9.5" font-weight="600" text-anchor="middle">
+<rect x="14" y="140" width="44" height="24" rx="12" fill="url(#gBtn)"/><text x="36" y="155" class="w">Todos</text>
+<rect x="64" y="140" width="64" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="96" y="155" class="s">Pendente</text>
+<rect x="134" y="140" width="56" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="162" y="155" class="s">Quitado</text>
+</g>
+<rect x="14" y="176" width="150" height="50" rx="12" fill="#FBEBDA"/>
+<text x="28" y="196" class="lbl">PENDENTE</text><text x="28" y="216" font-size="12" font-weight="800" class="wr">R$ 640,00</text>
+<rect x="176" y="176" width="150" height="50" rx="12" fill="#E1F1E7"/>
+<text x="190" y="196" class="lbl">QUITADO</text><text x="190" y="216" font-size="12" font-weight="800" class="pk">R$ 1.890,00</text>
+<rect x="14" y="240" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="16" y="252" width="4" height="30" rx="2" fill="#C9974C"/>
+<text x="30" y="262" font-size="11" font-weight="600">Maria Silva · Pacote Gold</text>
+<rect x="252" y="248" width="58" height="18" rx="9" fill="#FBEBDA"/><text x="281" y="260" text-anchor="middle" font-size="8.5" font-weight="700" class="wr">Pendente</text>
+<text x="30" y="280" font-size="9.5" class="s">Venc. 05/08/2026</text><text x="312" y="280" text-anchor="end" font-size="11" font-weight="700">R$ 180,00</text>
+<rect x="14" y="302" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="16" y="314" width="4" height="30" rx="2" fill="#3E8E64"/>
+<text x="30" y="324" font-size="11" font-weight="600">Venda de produtos</text>
+<rect x="252" y="310" width="58" height="18" rx="9" fill="#E1F1E7"/><text x="281" y="322" text-anchor="middle" font-size="8.5" font-weight="700" class="pk">Quitado</text>
+<text x="30" y="342" font-size="9.5" class="s">Pago em 02/08/2026</text><text x="312" y="342" text-anchor="end" font-size="11" font-weight="700">R$ 65,00</text>
+<rect x="14" y="364" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="16" y="376" width="4" height="30" rx="2" fill="#C9974C"/>
+<text x="30" y="386" font-size="11" font-weight="600">Ana Souza · Serviço</text>
+<rect x="252" y="372" width="58" height="18" rx="9" fill="#FBEBDA"/><text x="281" y="384" text-anchor="middle" font-size="8.5" font-weight="700" class="wr">Pendente</text>
+<text x="30" y="404" font-size="9.5" class="s">Venc. 10/08/2026</text><text x="312" y="404" text-anchor="end" font-size="11" font-weight="700">R$ 45,00</text>
+<use href="#fab"/><use href="#tb"/><use href="#ta4"/>
+</g>
+<text x="1340" y="916" text-anchor="middle" class="name">Financeiro</text>
+<text x="1340" y="936" text-anchor="middle" class="desc">A receber/pagar com filtro de status e período, totais e pagamento parcial/total</text>
+<g transform="translate(30,1000)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Agendamento</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">CLIENTE</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" class="f" font-weight="600">Maria Silva</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="126"/></g>
+<text x="14" y="168" class="lbl">DATA</text><text x="176" y="168" class="lbl">HORA</text>
+<rect x="14" y="174" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="28" y="199" class="f">05/08/2026</text>
+<rect x="176" y="174" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="190" y="199" class="f">14:00</text>
+<text x="14" y="236" class="lbl">SERVIÇOS (MULTISELEÇÃO)</text>
+<use href="#inp" x="14" y="242"/><text x="28" y="267" font-size="11.5" class="s">2 selecionados</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="262"/></g>
+<text x="28" y="298" class="f" font-weight="600">Manicure</text>
+<rect x="214" y="280" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="226" y="296" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="252" y="297" text-anchor="middle" font-size="12" font-weight="700">1</text>
+<rect x="276" y="280" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="288" y="296" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<text x="28" y="334" class="f" font-weight="600">Pedicure</text>
+<rect x="214" y="316" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="226" y="332" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="252" y="333" text-anchor="middle" font-size="12" font-weight="700">2</text>
+<rect x="276" y="316" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="288" y="332" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<text x="14" y="368" class="lbl">VALOR (R$)</text>
+<use href="#inp" x="14" y="374"/><text x="28" y="399" class="f" font-weight="700">R$ 135,00</text>
+<text x="312" y="399" text-anchor="end" font-size="8.5" class="s">soma automática</text>
+<text x="14" y="436" class="lbl">ADICIONAL (R$)</text>
+<use href="#inp" x="14" y="442"/><text x="28" y="467" class="f">R$ 0,00</text>
+<text x="14" y="500" class="lbl">DESCONTO</text>
+<rect x="14" y="506" width="46" height="40" rx="10" fill="#A64D6B"/><text x="37" y="531" text-anchor="middle" font-size="11" font-weight="700" class="w">%</text>
+<rect x="64" y="506" width="46" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="87" y="531" text-anchor="middle" font-size="11" font-weight="700" class="pp">R$</text>
+<rect x="120" y="506" width="206" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="134" y="531" class="f">10 %</text>
+<text x="14" y="570" class="lbl">OBSERVAÇÕES</text>
+<rect x="14" y="576" width="312" height="48" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="28" y="596" font-size="10" class="s">Alguma observação...</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="200" y="1716" text-anchor="middle" class="name">Agendamento — Formulário</text>
+<text x="200" y="1736" text-anchor="middle" class="desc">Cliente, data/hora com conflitos, serviços com quantidade, valor automático, adicional e desconto (% ou R$)</text>
+<g transform="translate(410,1000)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Detalhe do agendamento</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="34" rx="10" fill="#F5DCE4"/>
+<rect x="14" y="96" width="104" height="34" rx="10" fill="#A64D6B"/>
+<text x="66" y="117" text-anchor="middle" font-size="10" font-weight="700" class="w">Agendado</text>
+<text x="170" y="117" text-anchor="middle" font-size="10" font-weight="700" class="pp">Concluído</text>
+<text x="274" y="117" text-anchor="middle" font-size="10" font-weight="700" class="pp">Cancelado</text>
+<rect x="14" y="146" width="312" height="56" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<use href="#av" x="38" y="174"/>
+<text x="66" y="170" font-size="11.5" font-weight="600">Maria Silva</text>
+<text x="66" y="186" font-size="9.5" class="s">(11) 98888-1234</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="306" y="174"/></g>
+<rect x="14" y="210" width="312" height="52" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<g stroke="#A64D6B" stroke-width="1.4" fill="none"><use href="#icCal" x="34" y="236"/></g>
+<text x="52" y="240" class="f">05/08/2026</text>
+<circle cx="172" cy="236" r="7" fill="none" stroke="#A64D6B" stroke-width="1.4"/>
+<path d="M172 232 v4 h3" fill="none" stroke="#A64D6B" stroke-width="1.4" stroke-linecap="round"/>
+<text x="190" y="240" class="f">14:00 – 15:00</text>
+<rect x="14" y="270" width="312" height="84" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="292" class="st">Serviços</text>
+<text x="28" y="314" class="f">Manicure × 1</text><text x="312" y="314" text-anchor="end" class="f">R$ 35,00</text>
+<text x="28" y="336" class="f">Pedicure × 2</text><text x="312" y="336" text-anchor="end" class="f">R$ 100,00</text>
+<rect x="14" y="362" width="312" height="96" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="384" font-size="10" class="s">Total</text><text x="312" y="384" text-anchor="end" class="f">R$ 135,00</text>
+<text x="28" y="402" font-size="10" class="dg">Desconto</text><text x="312" y="402" text-anchor="end" font-size="10" font-weight="600" class="dg">− R$ 10,00</text>
+<text x="28" y="420" font-size="10" class="s">Sinal</text><text x="312" y="420" text-anchor="end" class="f">R$ 20,00</text>
+<line x1="28" y1="432" x2="312" y2="432" stroke="#F1E2E8"/>
+<text x="28" y="450" font-size="11" font-weight="700">Total com desconto</text><text x="312" y="450" text-anchor="end" font-size="11" font-weight="800" class="pp">R$ 125,00</text>
+<rect x="14" y="466" width="312" height="44" rx="12" fill="#FBEFF2"/>
+<text x="28" y="493" class="f">Conta a receber · R$ 125,00</text>
+<rect x="252" y="480" width="58" height="18" rx="9" fill="#FBEBDA"/><text x="281" y="492" text-anchor="middle" font-size="8.5" font-weight="700" class="wr">Pendente</text>
+<rect x="14" y="530" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="89" y="555" text-anchor="middle" font-size="11.5" font-weight="600" class="pp">Editar</text>
+<rect x="176" y="530" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#B23A48"/>
+<text x="251" y="555" text-anchor="middle" font-size="11.5" font-weight="600" class="dg">Excluir</text>
+<text x="170" y="596" text-anchor="middle" class="tiny">Excluir devolve saldo de pacote e estoque</text>
+</g>
+<text x="580" y="1716" text-anchor="middle" class="name">Detalhe do Agendamento</text>
+<text x="580" y="1736" text-anchor="middle" class="desc">Resumo completo com troca de status, valores, sinal e conta vinculada; editar e excluir</text>
+<g transform="translate(790,1000)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Compromisso</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="34" rx="10" fill="#FBEBDA"/>
+<g stroke="#C97B2E" stroke-width="1.5" fill="none"><use href="#lock" x="32" y="113"/></g>
+<text x="50" y="117" font-size="9.5" font-weight="600" class="wr">Bloqueia novos agendamentos neste período</text>
+<text x="14" y="158" class="lbl">TÍTULO</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" font-size="11.5" class="s">Ex.: Almoço</text>
+<text x="14" y="222" class="lbl">DATA</text>
+<use href="#inp" x="14" y="228"/><text x="28" y="253" class="f">05/08/2026</text>
+<text x="14" y="292" class="lbl">INÍCIO</text><text x="176" y="292" class="lbl">FIM</text>
+<rect x="14" y="298" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="28" y="323" class="f">12:00</text>
+<rect x="176" y="298" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="190" y="323" class="f">13:00</text>
+<text x="14" y="366" class="lbl">OBSERVAÇÕES</text>
+<rect x="14" y="372" width="312" height="64" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="28" y="392" font-size="10" class="s">Opcional</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="960" y="1716" text-anchor="middle" class="name">Compromisso — Formulário</text>
+<text x="960" y="1736" text-anchor="middle" class="desc">Datas/horários indisponíveis; validações de sobreposição e horário</text>
+<g transform="translate(1170,1000)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Nova Cliente</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">NOME</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" font-size="11.5" class="s">Ex.: Maria Silva</text>
+<text x="14" y="158" class="lbl">TELEFONE</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" class="f">(11) 98888-1234</text>
+<text x="14" y="216" class="lbl">E-MAIL</text>
+<use href="#inp" x="14" y="222"/><text x="28" y="247" font-size="11.5" class="s">opcional</text>
+<text x="14" y="274" class="lbl">OBSERVAÇÕES</text>
+<rect x="14" y="280" width="312" height="64" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="28" y="300" font-size="10" class="s">Preferências, alergias, etc.</text>
+<g stroke="#B23A48" stroke-width="1.5" fill="none"><use href="#trash" x="96" y="560"/></g>
+<text x="112" y="564" font-size="11.5" font-weight="600" class="dg">Excluir cliente</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="1340" y="1716" text-anchor="middle" class="name">Cliente — Formulário</text>
+<text x="1340" y="1736" text-anchor="middle" class="desc">Cadastro e edição com máscara de telefone e exclusão com confirmação</text>
+<g transform="translate(30,1820)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Maria Silva</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="92" rx="14" fill="#FFFFFF" stroke="#EEDEE4"/>
+<use href="#av" x="42" y="140"/>
+<text x="70" y="128" font-size="13" font-weight="700">Maria Silva</text>
+<text x="70" y="146" font-size="10" class="s">(11) 98888-1234</text>
+<text x="70" y="162" font-size="10" class="s">maria@email.com</text>
+<text x="70" y="178" font-size="9" class="s">Prefere nude · alérgica a acetona</text>
+<g text-anchor="middle">
+<rect x="14" y="204" width="98" height="50" rx="12" fill="#F5DCE4"/>
+<text x="63" y="226" font-size="12" font-weight="800" class="pp">12</text><text x="63" y="242" font-size="8" font-weight="600" class="pp">agendamentos</text>
+<rect x="121" y="204" width="98" height="50" rx="12" fill="#E1F1E7"/>
+<text x="170" y="226" font-size="12" font-weight="800" class="pk">R$ 1.320</text><text x="170" y="242" font-size="8" font-weight="600" class="pk">recebido</text>
+<rect x="228" y="204" width="98" height="50" rx="12" fill="#FBEBDA"/>
+<text x="277" y="226" font-size="12" font-weight="800" class="wr">R$ 90</text><text x="277" y="242" font-size="8" font-weight="600" class="wr">pendente</text>
+</g>
+<text x="14" y="284" class="st">Pacote vigente</text>
+<rect x="14" y="294" width="312" height="64" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="316" font-size="11.5" font-weight="600">Pacote Gold</text>
+<text x="28" y="332" font-size="9.5" class="s">Restam 6 de 10 serviços</text>
+<rect x="28" y="340" width="180" height="6" rx="3" fill="#F5DCE4"/>
+<rect x="28" y="340" width="108" height="6" rx="3" fill="url(#gBtn)"/>
+<text x="216" y="347" font-size="9" class="s">60%</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="326"/></g>
+<rect x="14" y="374" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="89" y="399" text-anchor="middle" font-size="11.5" font-weight="600" class="pp">Histórico</text>
+<rect x="176" y="374" width="150" height="40" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="251" y="399" text-anchor="middle" font-size="11.5" font-weight="600" class="pp">Pacotes</text>
+<rect x="14" y="430" width="312" height="42" rx="12" fill="url(#gBtn)"/>
+<text x="170" y="456" text-anchor="middle" font-size="13" font-weight="700" class="w">Novo agendamento</text>
+<use href="#fab"/>
+</g>
+<text x="200" y="2536" text-anchor="middle" class="name">Consulta da Cliente</text>
+<text x="200" y="2556" text-anchor="middle" class="desc">Ficha completa, resumo de atendimentos/recebimentos e pacote vigente com saldo</text>
+<g transform="translate(410,1820)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Histórico</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="117" font-size="11" font-weight="600">Manicure + Pedicure</text><text x="312" y="117" text-anchor="end" font-size="11" font-weight="700">R$ 85,00</text>
+<text x="28" y="136" font-size="9.5" class="s">05/08/2026</text>
+<rect x="252" y="128" width="64" height="16" rx="8" fill="#E1F1E7"/><text x="284" y="139" text-anchor="middle" font-size="8" font-weight="700" class="pk">Concluído</text>
+<rect x="14" y="158" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="179" font-size="11" font-weight="600">Alongamento</text><text x="312" y="179" text-anchor="end" font-size="11" font-weight="700">R$ 90,00</text>
+<text x="28" y="198" font-size="9.5" class="s">22/07/2026</text>
+<rect x="252" y="190" width="64" height="16" rx="8" fill="#E1F1E7"/><text x="284" y="201" text-anchor="middle" font-size="8" font-weight="700" class="pk">Concluído</text>
+<rect x="14" y="220" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="241" font-size="11" font-weight="600">Spa dos pés</text><text x="312" y="241" text-anchor="end" font-size="11" font-weight="700">R$ 60,00</text>
+<text x="28" y="260" font-size="9.5" class="s">10/07/2026</text>
+<rect x="252" y="252" width="64" height="16" rx="8" fill="#F8E2E3"/><text x="284" y="263" text-anchor="middle" font-size="8" font-weight="700" class="dg">Cancelado</text>
+<rect x="14" y="282" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="303" font-size="11" font-weight="600">Manicure</text><text x="312" y="303" text-anchor="end" font-size="11" font-weight="700">R$ 35,00</text>
+<text x="28" y="322" font-size="9.5" class="s">28/06/2026</text>
+<rect x="252" y="314" width="64" height="16" rx="8" fill="#E1F1E7"/><text x="284" y="325" text-anchor="middle" font-size="8" font-weight="700" class="pk">Concluído</text>
+<use href="#fab"/>
+</g>
+<text x="580" y="2536" text-anchor="middle" class="name">Histórico da Cliente</text>
+<text x="580" y="2556" text-anchor="middle" class="desc">Todos os atendimentos com data, serviços, valor e status</text>
+<g transform="translate(790,1820)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Pacotes da cliente</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="66" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="120" font-size="11.5" font-weight="600">Pacote Gold</text>
+<text x="28" y="138" font-size="9.5" class="s">Restam 4 de 10</text>
+<rect x="28" y="148" width="180" height="6" rx="3" fill="#F5DCE4"/><rect x="28" y="148" width="72" height="6" rx="3" fill="url(#gBtn)"/>
+<g stroke="#B23A48" stroke-width="1.5" fill="none"><use href="#trash" x="306" y="118"/></g>
+<rect x="14" y="170" width="312" height="66" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="194" font-size="11.5" font-weight="600">Pacote Prata</text>
+<text x="28" y="212" font-size="9.5" class="s">Restam 1 de 6</text>
+<rect x="28" y="222" width="180" height="6" rx="3" fill="#F5DCE4"/><rect x="28" y="222" width="31" height="6" rx="3" fill="url(#gBtn)"/>
+<g stroke="#B23A48" stroke-width="1.5" fill="none"><use href="#trash" x="306" y="192"/></g>
+<rect x="14" y="244" width="312" height="66" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="268" font-size="11.5" font-weight="600">Combo Mensal</text>
+<text x="28" y="286" font-size="9.5" class="wr" font-weight="600">Em uso em 2 agendamento(s)</text>
+<rect x="252" y="254" width="64" height="16" rx="8" fill="#FBEBDA"/><text x="284" y="265" text-anchor="middle" font-size="8" font-weight="700" class="wr">Bloqueado</text>
+<rect x="28" y="296" width="180" height="6" rx="3" fill="#F5DCE4"/><rect x="28" y="296" width="90" height="6" rx="3" fill="url(#gBtn)"/>
+<g stroke="#BBA7B0" stroke-width="1.5" fill="none"><use href="#trash" x="306" y="290"/></g>
+<text x="170" y="336" text-anchor="middle" class="tiny">Excluir remove também a conta a receber vinculada</text>
+<use href="#fab"/>
+</g>
+<text x="960" y="2536" text-anchor="middle" class="name">Pacotes da Cliente</text>
+<text x="960" y="2556" text-anchor="middle" class="desc">Saldo restante com progresso; excluir só quando nenhum agendamento usa o saldo</text>
+<g transform="translate(1170,1820)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Vender Pacote</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">CLIENTE</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" class="f" font-weight="600">Maria Silva</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="126"/></g>
+<rect x="14" y="152" width="312" height="34" rx="10" fill="#F5DCE4"/>
+<rect x="14" y="152" width="156" height="34" rx="10" fill="#A64D6B"/>
+<text x="92" y="173" text-anchor="middle" font-size="10.5" font-weight="700" class="w">Catálogo</text>
+<text x="238" y="173" text-anchor="middle" font-size="10.5" font-weight="700" class="pp">Montar na venda</text>
+<rect x="14" y="200" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#A64D6B" stroke-width="1.5"/>
+<circle cx="36" cy="227" r="9" fill="url(#gBtn)"/><circle cx="36" cy="227" r="3.5" fill="#FFFFFF"/>
+<text x="56" y="224" font-size="11" font-weight="600">Pacote Gold · 10 serviços</text>
+<text x="312" y="224" text-anchor="end" font-size="11" font-weight="700">R$ 150,00</text>
+<text x="56" y="242" font-size="9" class="s">Manicure ×4 · Pedicure ×4 · Along. ×2</text>
+<rect x="14" y="262" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<circle cx="36" cy="289" r="9" fill="#FFFFFF" stroke="#BBA7B0" stroke-width="1.5"/>
+<text x="56" y="286" font-size="11" font-weight="600">Pacote Prata · 6 serviços</text>
+<text x="312" y="286" text-anchor="end" font-size="11" font-weight="700">R$ 90,00</text>
+<text x="56" y="304" font-size="9" class="s">Manicure ×3 · Pedicure ×3</text>
+<text x="14" y="340" class="lbl">DESCONTO</text>
+<rect x="14" y="346" width="46" height="40" rx="10" fill="#A64D6B"/><text x="37" y="371" text-anchor="middle" font-size="11" font-weight="700" class="w">%</text>
+<rect x="64" y="346" width="46" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="87" y="371" text-anchor="middle" font-size="11" font-weight="700" class="pp">R$</text>
+<rect x="120" y="346" width="206" height="40" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/><text x="134" y="371" class="f">10 %</text>
+<rect x="14" y="400" width="312" height="88" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="422" font-size="10" class="s">Valor</text><text x="312" y="422" text-anchor="end" class="f">R$ 150,00</text>
+<text x="28" y="442" font-size="10" class="dg">Desconto</text><text x="312" y="442" text-anchor="end" font-size="10" font-weight="600" class="dg">− R$ 15,00</text>
+<line x1="28" y1="454" x2="312" y2="454" stroke="#F1E2E8"/>
+<text x="28" y="474" font-size="11" font-weight="700">Total</text><text x="312" y="474" text-anchor="end" font-size="11" font-weight="800" class="pp">R$ 135,00</text>
+<rect x="14" y="504" width="312" height="44" rx="12" fill="url(#gBtn)"/>
+<text x="170" y="531" text-anchor="middle" font-size="13.5" font-weight="700" class="w">Confirmar venda</text>
+<text x="170" y="566" text-anchor="middle" class="tiny">Gera conta a receber com o valor final</text>
+</g>
+<text x="1340" y="2536" text-anchor="middle" class="name">Venda de Pacote</text>
+<text x="1340" y="2556" text-anchor="middle" class="desc">Catálogo ou montado na venda, desconto em % ou R$ e conta a receber automática</text>
+<g transform="translate(30,2640)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Serviços &amp; Pacotes</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="36" rx="10" fill="#F5DCE4"/>
+<rect x="14" y="96" width="104" height="36" rx="10" fill="#A64D6B"/>
+<text x="66" y="118" text-anchor="middle" font-size="10.5" font-weight="700" class="w">Serviços</text>
+<text x="170" y="118" text-anchor="middle" font-size="10.5" font-weight="700" class="pp">Pacotes</text>
+<text x="274" y="118" text-anchor="middle" font-size="10.5" font-weight="700" class="pp">Produtos</text>
+<rect x="14" y="148" width="312" height="44" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="175" font-size="11.5" font-weight="600">Manicure</text><text x="296" y="175" text-anchor="end" font-size="11" font-weight="700">R$ 35,00</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="170"/></g>
+<rect x="14" y="200" width="312" height="44" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="227" font-size="11.5" font-weight="600">Pedicure</text><text x="296" y="227" text-anchor="end" font-size="11" font-weight="700">R$ 50,00</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="222"/></g>
+<rect x="14" y="252" width="312" height="44" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="279" font-size="11.5" font-weight="600">Alongamento</text><text x="296" y="279" text-anchor="end" font-size="11" font-weight="700">R$ 90,00</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="274"/></g>
+<rect x="14" y="304" width="312" height="44" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="331" font-size="11.5" font-weight="600">Esmaltação em gel</text><text x="296" y="331" text-anchor="end" font-size="11" font-weight="700">R$ 70,00</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="310" y="326"/></g>
+<use href="#fab"/>
+</g>
+<text x="200" y="3356" text-anchor="middle" class="name">Serviços &amp; Pacotes</text>
+<text x="200" y="3376" text-anchor="middle" class="desc">Alternador Serviços / Pacotes / Produtos com CRUD e venda de produtos</text>
+<g transform="translate(410,2640)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Serviço</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">NOME</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" font-size="11.5" class="s">Ex.: Blindagem</text>
+<text x="14" y="158" class="lbl">VALOR (R$)</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" class="f">R$ 35,00</text>
+<text x="14" y="216" class="lbl">DURAÇÃO (MIN)</text>
+<use href="#inp" x="14" y="222"/><text x="28" y="247" class="f">60</text>
+<g stroke="#B23A48" stroke-width="1.5" fill="none"><use href="#trash" x="100" y="560"/></g>
+<text x="116" y="564" font-size="11.5" font-weight="600" class="dg">Excluir serviço</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="580" y="3356" text-anchor="middle" class="name">Serviço — Formulário</text>
+<text x="580" y="3376" text-anchor="middle" class="desc">Nome, preço e duração; exclusão com confirmação</text>
+<g transform="translate(790,2640)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Pacote</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">NOME</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" class="f">Ex.: Pacote Gold</text>
+<text x="14" y="158" class="lbl">VALOR (R$)</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" class="f">R$ 150,00</text>
+<text x="14" y="224" class="st">Serviços do pacote</text>
+<text x="28" y="254" class="f" font-weight="600">Manicure</text>
+<rect x="214" y="236" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="226" y="252" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="252" y="253" text-anchor="middle" font-size="12" font-weight="700">2</text>
+<rect x="276" y="236" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="288" y="252" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<text x="28" y="290" class="f" font-weight="600">Pedicure</text>
+<rect x="214" y="272" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="226" y="288" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="252" y="289" text-anchor="middle" font-size="12" font-weight="700">2</text>
+<rect x="276" y="272" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="288" y="288" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<text x="28" y="326" class="f" font-weight="600">Alongamento</text>
+<rect x="214" y="308" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="226" y="324" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="252" y="325" text-anchor="middle" font-size="12" font-weight="700">1</text>
+<rect x="276" y="308" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="288" y="324" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<text x="170" y="356" text-anchor="middle" class="tiny">Quantidade de cada serviço no pacote</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="960" y="3356" text-anchor="middle" class="name">Pacote — Formulário</text>
+<text x="960" y="3376" text-anchor="middle" class="desc">Serviços com quantidade; o saldo é controlado por venda e baixado por agendamento</text>
+<g transform="translate(1170,2640)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Produto</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">NOME</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" font-size="11.5" class="s">Ex.: Base coat</text>
+<text x="14" y="158" class="lbl">PREÇO (R$)</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" class="f">R$ 18,00</text>
+<text x="14" y="216" class="lbl">ESTOQUE</text>
+<use href="#inp" x="14" y="222"/><text x="28" y="247" class="f">12</text>
+<g stroke="#B23A48" stroke-width="1.5" fill="none"><use href="#trash" x="100" y="560"/></g>
+<text x="116" y="564" font-size="11.5" font-weight="600" class="dg">Excluir produto</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="1340" y="3356" text-anchor="middle" class="name">Produto — Formulário</text>
+<text x="1340" y="3376" text-anchor="middle" class="desc">Nome, preço e controle de estoque com baixa na venda</text>
+<g transform="translate(30,3460)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Vender Produtos</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">CLIENTE</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" class="f" font-weight="600">Maria Silva</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="126"/></g>
+<rect x="14" y="158" width="312" height="52" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="180" font-size="11.5" font-weight="600">Esmalte em gel</text>
+<text x="28" y="196" font-size="9" class="s">estoque: 8</text>
+<rect x="218" y="172" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="230" y="188" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="256" y="189" text-anchor="middle" font-size="12" font-weight="700">1</text>
+<rect x="282" y="172" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="294" y="188" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<rect x="14" y="218" width="312" height="52" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="240" font-size="11.5" font-weight="600">Base coat</text>
+<text x="28" y="256" font-size="9" class="s">estoque: 12</text>
+<rect x="218" y="232" width="24" height="24" rx="8" fill="#FFFFFF" stroke="#EEDEE4"/><text x="230" y="248" text-anchor="middle" font-size="12" class="s">−</text>
+<text x="256" y="249" text-anchor="middle" font-size="12" font-weight="700">2</text>
+<rect x="282" y="232" width="24" height="24" rx="8" fill="url(#gBtn)"/><text x="294" y="248" text-anchor="middle" font-size="12" font-weight="700" class="w">+</text>
+<rect x="14" y="282" width="312" height="52" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="313" font-size="10" class="s">Total</text>
+<text x="312" y="313" text-anchor="end" font-size="13" font-weight="800">R$ 61,00</text>
+<text x="170" y="356" text-anchor="middle" class="tiny">Baixa o estoque e gera conta a receber</text>
+<rect x="14" y="640" width="312" height="44" rx="12" fill="url(#gBtn)"/>
+<text x="170" y="667" text-anchor="middle" font-size="13.5" font-weight="700" class="w">Confirmar venda</text>
+</g>
+<text x="200" y="4176" text-anchor="middle" class="name">Venda de Produtos</text>
+<text x="200" y="4196" text-anchor="middle" class="desc">Seleção com quantidade, baixa de estoque e conta a receber</text>
+<g transform="translate(410,3460)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Nova Conta</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="36" rx="10" fill="#F5DCE4"/>
+<rect x="14" y="96" width="156" height="36" rx="10" fill="#A64D6B"/>
+<text x="92" y="118" text-anchor="middle" font-size="11" font-weight="700" class="w">A Receber</text>
+<text x="238" y="118" text-anchor="middle" font-size="11" font-weight="700" class="pp">A Pagar</text>
+<text x="14" y="158" class="lbl">DESCRIÇÃO</text>
+<use href="#inp" x="14" y="164"/><text x="28" y="189" font-size="11.5" class="s">Ex.: Manicure — Maria Silva</text>
+<text x="14" y="216" class="lbl">VALOR (R$)</text>
+<use href="#inp" x="14" y="222"/><text x="28" y="247" class="f">R$ 85,00</text>
+<text x="14" y="274" class="lbl">VENCIMENTO</text>
+<use href="#inp" x="14" y="280"/><text x="28" y="305" class="f">05/08/2026</text>
+<text x="14" y="332" class="lbl">CENTRO DE CUSTO</text>
+<use href="#inp" x="14" y="338"/><text x="28" y="363" class="f">Serviços</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="358"/></g>
+<text x="14" y="390" class="lbl">CLIENTE (OPCIONAL)</text>
+<use href="#inp" x="14" y="396"/><text x="28" y="421" class="f">Maria Silva</text>
+<g stroke="#BBA7B0" stroke-width="1.6"><use href="#chev" x="308" y="416"/></g>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="580" y="4176" text-anchor="middle" class="name">Conta — Formulário</text>
+<text x="580" y="4196" text-anchor="middle" class="desc">A receber ou a pagar, com centro de custo, cliente opcional e pagamento parcial/total</text>
+<g transform="translate(790,3460)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Categorias</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="118" font-size="11.5" font-weight="600">Serviços</text>
+<rect x="28" y="128" width="52" height="16" rx="8" fill="#E1F1E7"/><text x="54" y="139" text-anchor="middle" font-size="8" font-weight="700" class="pk">Receita</text>
+<text x="312" y="130" text-anchor="end" font-size="11" font-weight="700">R$ 2.340,00</text>
+<rect x="14" y="158" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="180" font-size="11.5" font-weight="600">Produtos</text>
+<rect x="28" y="190" width="52" height="16" rx="8" fill="#E1F1E7"/><text x="54" y="201" text-anchor="middle" font-size="8" font-weight="700" class="pk">Receita</text>
+<text x="312" y="192" text-anchor="end" font-size="11" font-weight="700">R$ 310,00</text>
+<rect x="14" y="220" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="242" font-size="11.5" font-weight="600">Material</text>
+<rect x="28" y="252" width="56" height="16" rx="8" fill="#FBEBDA"/><text x="56" y="263" text-anchor="middle" font-size="8" font-weight="700" class="wr">Despesa</text>
+<text x="312" y="254" text-anchor="end" font-size="11" font-weight="700">R$ 180,00</text>
+<rect x="14" y="282" width="312" height="54" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="304" font-size="11.5" font-weight="600">Marketing</text>
+<rect x="28" y="314" width="56" height="16" rx="8" fill="#FBEBDA"/><text x="56" y="325" text-anchor="middle" font-size="8" font-weight="700" class="wr">Despesa</text>
+<text x="312" y="316" text-anchor="end" font-size="11" font-weight="700">R$ 90,00</text>
+<use href="#fab"/>
+</g>
+<text x="960" y="4176" text-anchor="middle" class="name">Categorias (Centro de Custo)</text>
+<text x="960" y="4196" text-anchor="middle" class="desc">Receitas e despesas agrupadas com total consolidado</text>
+<g transform="translate(1170,3460)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Nova Categoria</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<text x="14" y="100" class="lbl">NOME</text>
+<use href="#inp" x="14" y="106"/><text x="28" y="131" font-size="11.5" class="s">Ex.: Material</text>
+<text x="14" y="158" class="lbl">TIPO</text>
+<rect x="14" y="164" width="312" height="36" rx="10" fill="#F5DCE4"/>
+<rect x="222" y="164" width="104" height="36" rx="10" fill="#A64D6B"/>
+<text x="66" y="186" text-anchor="middle" font-size="10.5" font-weight="700" class="pp">Receita</text>
+<text x="170" y="186" text-anchor="middle" font-size="10.5" font-weight="700" class="pp">Despesa</text>
+<text x="274" y="186" text-anchor="middle" font-size="10.5" font-weight="700" class="w">Ambos</text>
+<text x="14" y="224" class="lbl">DESCRIÇÃO</text>
+<rect x="14" y="230" width="312" height="64" rx="10" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="254" font-size="10" class="s">Opcional</text>
+<use href="#btnSave" x="14" y="640"/>
+</g>
+<text x="1340" y="4176" text-anchor="middle" class="name">Categoria — Formulário</text>
+<text x="1340" y="4196" text-anchor="middle" class="desc">Nome, tipo (receita/despesa/ambos) e descrição</text>
+<g transform="translate(30,4300)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Configurações</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<rect x="14" y="96" width="312" height="84" rx="14" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="120" class="st">Notificações</text>
+<text x="28" y="138" class="tiny">Lembrete 1h antes + resumo diário às 06:00</text>
+<use href="#sw" x="270" y="132"/>
+<rect x="14" y="196" width="312" height="132" rx="14" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="220" class="st">Conta e sincronização</text>
+<use href="#av" x="42" y="262"/>
+<text x="68" y="256" class="f">lucitti@gmail.com</text>
+<text x="68" y="272" font-size="9.5" font-weight="600" class="pk">Conectado ao Google</text>
+<rect x="14" y="290" width="150" height="36" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="89" y="312" text-anchor="middle" font-size="11" font-weight="600" class="pp">Sincronizar agora</text>
+<rect x="176" y="290" width="150" height="36" rx="10" fill="#FFFFFF" stroke="#B23A48"/>
+<text x="251" y="312" text-anchor="middle" font-size="11" font-weight="600" class="dg">Sair da conta</text>
+<rect x="14" y="344" width="312" height="148" rx="14" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="28" y="368" class="st">Backup de dados</text>
+<text x="28" y="386" class="tiny">Exporte ou restaure um arquivo .json</text>
+<rect x="14" y="404" width="150" height="36" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="89" y="426" text-anchor="middle" font-size="11" font-weight="600" class="pp">Compartilhar</text>
+<rect x="176" y="404" width="150" height="36" rx="10" fill="url(#gBtn)"/>
+<text x="251" y="426" text-anchor="middle" font-size="11" font-weight="700" class="w">Salvar no celular</text>
+<rect x="14" y="452" width="150" height="36" rx="10" fill="#FFFFFF" stroke="#A64D6B"/>
+<text x="89" y="474" text-anchor="middle" font-size="11" font-weight="600" class="pp">Importar backup</text>
+<text x="170" y="530" text-anchor="middle" class="tiny">Belle 1.0.0 · dados 100% locais (offline-first)</text>
+<use href="#fab"/>
+</g>
+<text x="200" y="5016" text-anchor="middle" class="name">Configurações</text>
+<text x="200" y="5036" text-anchor="middle" class="desc">Notificações locais, conta Google com sincronização em nuvem e backup/importação de dados</text>
+<g transform="translate(410,4300)">
+<use href="#phone"/>
+<use href="#hdrBack"/>
+<text x="170" y="63" text-anchor="middle" font-size="15" font-weight="700">Novo Agendamento</text>
+<use href="#hdrSair"/><use href="#hdrLine"/>
+<use href="#inp" x="14" y="100"/>
+<use href="#inp" x="14" y="152"/>
+<rect x="14" y="204" width="312" height="80" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="4" y="88" width="332" height="608" fill="#2E2126" opacity="0.35"/>
+<rect x="24" y="460" width="292" height="196" rx="18" fill="#FFFFFF" stroke="#EEDEE4"/>
+<circle cx="52" cy="492" r="12" fill="url(#gPa)"/>
+<g stroke="#FFFFFF" stroke-width="1.5" fill="none"><use href="#icFin" x="52" y="492"/></g>
+<text x="72" y="497" font-size="13" font-weight="700">Gerar conta a receber?</text>
+<text x="40" y="522" class="tiny">Criar conta a receber de R$ 125,00 para</text>
+<text x="40" y="536" class="tiny">Maria Silva?</text>
+<rect x="40" y="556" width="260" height="40" rx="12" fill="url(#gBtn)"/>
+<text x="170" y="581" text-anchor="middle" font-size="12.5" font-weight="700" class="w">Gerar conta</text>
+<rect x="40" y="606" width="260" height="34" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<text x="170" y="627" text-anchor="middle" font-size="11.5" font-weight="600" class="pp">Somente agendar</text>
+<text x="170" y="676" text-anchor="middle" font-size="9" class="bgw">Header nativo continua tocável (overlay in-screen)</text>
+</g>
+<text x="580" y="5016" text-anchor="middle" class="name">AppModal — "Gerar conta a receber?"</text>
+<text x="580" y="5036" text-anchor="middle" class="desc">Bottom sheet de confirmação com backdrop escurecido; o header segue acessível</text>
+<g transform="translate(790,4300)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Agenda</text>
+<use href="#hdrLine"/>
+<rect x="14" y="94" width="110" height="24" rx="12" fill="url(#gBtn)"/><text x="69" y="109" text-anchor="middle" font-size="9.5" font-weight="600" class="w">Próximos 7 dias</text>
+<rect x="132" y="94" width="48" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="156" y="109" text-anchor="middle" font-size="9.5" font-weight="600" class="s">Hoje</text>
+<rect x="14" y="134" width="312" height="58" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="24" y="144" width="34" height="38" rx="10" fill="url(#gBtn)"/><text x="41" y="166" text-anchor="middle" font-size="9.5" font-weight="700" class="w">14:00</text>
+<text x="68" y="156" font-size="11.5" font-weight="600">Maria Silva</text>
+<text x="68" y="172" font-size="9.5" class="s">Manicure + Pedicure · R$ 85</text>
+<rect x="4" y="88" width="332" height="608" fill="#2E2126" opacity="0.35"/>
+<rect x="14" y="300" width="252" height="300" rx="18" fill="#FFFFFF" stroke="#EEDEE4"/>
+<rect x="28" y="318" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<g stroke="#A64D6B" stroke-width="1.3" fill="none"><use href="#lock" x="38" y="328"/></g>
+<text x="56" y="334" class="f">Novo Compromisso</text>
+<rect x="28" y="352" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<text x="38" y="367" text-anchor="middle" font-size="9" font-weight="700" class="pp">$</text>
+<text x="56" y="368" class="f">Nova Conta</text>
+<rect x="28" y="386" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<rect x="33" y="392" width="11" height="9" rx="2" fill="none" stroke="#A64D6B" stroke-width="1.3"/><circle cx="41" cy="394.5" r="1" fill="#A64D6B"/>
+<text x="56" y="402" class="f">Categorias</text>
+<rect x="28" y="420" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<rect x="33" y="426" width="12" height="10" rx="2" fill="none" stroke="#A64D6B" stroke-width="1.3"/><line x1="33" y1="431" x2="45" y2="431" stroke="#A64D6B" stroke-width="1.3"/>
+<text x="56" y="436" class="f">Produtos</text>
+<rect x="28" y="454" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<path d="M33 471 L43 461 M33 461 L43 471" stroke="#A64D6B" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+<text x="56" y="470" class="f">Serviços &amp; Pacotes</text>
+<rect x="28" y="488" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<rect x="33" y="493" width="12" height="9" rx="1.5" fill="none" stroke="#A64D6B" stroke-width="1.3"/><line x1="39" y1="493" x2="39" y2="502" stroke="#A64D6B" stroke-width="1.3"/>
+<text x="56" y="504" class="f">Vender Pacote</text>
+<rect x="28" y="522" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<circle cx="37" cy="530" r="2.5" fill="none" stroke="#A64D6B" stroke-width="1.3"/>
+<path d="M32.5 539 Q37 533 41.5 539 M42 529 h4 M44 527 v4" fill="none" stroke="#A64D6B" stroke-width="1.3" stroke-linecap="round"/>
+<text x="56" y="538" class="f">Cadastrar Cliente</text>
+<rect x="28" y="556" width="20" height="20" rx="6" fill="#F5DCE4"/>
+<g stroke="#A64D6B" stroke-width="1.3" fill="none"><use href="#icCal" x="38" y="566"/></g>
+<text x="56" y="572" class="f" font-weight="600">Novo Agendamento</text>
+<circle cx="46" cy="604" r="24" fill="url(#gPa)"/>
+<g stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round">
+<line x1="37" y1="597" x2="55" y2="611"/><line x1="55" y1="597" x2="37" y2="611"/>
+</g>
+<text x="170" y="648" text-anchor="middle" font-size="9" class="bgw">Painel rola; "Novo Agendamento" fica na base, perto do botão</text>
+</g>
+<text x="960" y="5016" text-anchor="middle" class="name">SpeedDial (menu em leque)</text>
+<text x="960" y="5036" text-anchor="middle" class="desc">FAB global com 8 ações; painel com "Novo Agendamento" na base, perto do botão</text>
+<g transform="translate(1170,4300)">
+<use href="#phone"/>
+<text x="170" y="64" text-anchor="middle" font-size="15" font-weight="700">Agenda</text>
+<use href="#hdrLine"/>
+<rect x="40" y="96" width="260" height="36" rx="12" fill="#2E2126" opacity="0.92"/>
+<use href="#check" x="62" y="114"/>
+<text x="78" y="118" font-size="11" font-weight="600" class="w">Agendamento realizado</text>
+<rect x="14" y="150" width="110" height="24" rx="12" fill="url(#gBtn)"/><text x="69" y="165" text-anchor="middle" font-size="9.5" font-weight="600" class="w">Próximos 7 dias</text>
+<rect x="132" y="150" width="48" height="24" rx="12" fill="#FFFFFF" stroke="#EEDEE4"/><text x="156" y="165" text-anchor="middle" font-size="9.5" font-weight="600" class="s">Hoje</text>
+<circle cx="170" cy="300" r="36" fill="url(#gPa)"/>
+<g stroke="#FFFFFF" stroke-width="1.8" fill="none"><use href="#icCal" x="170" y="300"/></g>
+<text x="170" y="366" text-anchor="middle" font-size="13" font-weight="700">Nenhum agendamento</text>
+<text x="170" y="384" text-anchor="middle" class="tiny">Toque no botão para criar o primeiro</text>
+<use href="#fab"/><use href="#tb"/><use href="#ta2"/>
+<text x="170" y="620" text-anchor="middle" class="tiny">EmptyState + Toast (success) · some em 2,6s</text>
+</g>
+<text x="1340" y="5016" text-anchor="middle" class="name">Estados — Vazio e Toast</text>
+<text x="1340" y="5036" text-anchor="middle" class="desc">EmptyState com ícone gradiente e feedback pós-ação (success/error/info)</text>
+<text x="780" y="5082" text-anchor="middle" font-size="10" class="s">Gerado como referência de UI/UX do projeto Belle (manicure-app) · 24 quadros · tema rosé/dourado · React Native + Expo</text>
+</svg>
